@@ -6,7 +6,6 @@ import ApiResponse from "../utils/apiResponse.js";
 import { generateAndSaveTokens } from "../utils/generateTokens.js";
 import {
   accessTokenCookieOptions,
-  cookieOptions,
   refreshTokenCookieOptions,
 } from "../utils/cookieOptions.js";
 

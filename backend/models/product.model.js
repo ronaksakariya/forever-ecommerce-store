@@ -8,21 +8,21 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "product description cannot be empty"],
     },
-    image: {
+    images: {
       type: [String],
       required: [true, "product images cannot be empty"],
     },
     category: {
       type: String,
       required: [true, "product category cannot be empty"],
-      enum: ["men", "women", "children"],
+      enum: ["men", "women", "kids"],
     },
     subCategory: {
       type: String,
       required: [true, "product sub-category cannot be empty"],
       enum: ["bottomwear", "topwear", "winterwear"],
     },
-    size: {
+    sizes: {
       type: [String],
       required: [true, "product sizes cannot be empty"],
       enum: ["S", "M", "L", "XL", "XXL"],
