@@ -6,8 +6,10 @@ import ApiResponse from "../utils/apiResponse.js";
 import { generateAndSaveTokens } from "../utils/generateTokens.js";
 import {
   accessTokenCookieOptions,
+  adminTokenCookieOptions,
   refreshTokenCookieOptions,
 } from "../utils/cookieOptions.js";
+import jwt from "jsonwebtoken";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { email, password, name } = req.body;
@@ -66,4 +68,30 @@ export const loginUser = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, accessTokenCookieOptions)
     .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
     .json(new ApiResponse(200, user, "user logged in successfully"));
+});
+
+export const adminLogin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new ApiError(400, "admin email and password are necessary");
+  }
+
+  if (
+    email !== process.env.ADMIN_EMAIL &&
+    password !== process.env.ADMIN_PASSWORD
+  ) {
+    throw new ApiError(409, "admin credentials are incorrect");
+  }
+
+  const adminToken = await jwt.sign(
+    { email, role: "admin" },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ADMIN_TOKEN_EXPIRY },
+  );
+
+  return res
+    .status(200)
+    .cookie("adminToken", adminToken, adminTokenCookieOptions)
+    .json(new ApiResponse(200, { adminToken }, "admin logged in successfully"));
 });

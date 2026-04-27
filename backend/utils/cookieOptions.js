@@ -13,3 +13,8 @@ export const refreshTokenCookieOptions = {
   ...cookieOptions,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+
+export const adminTokenCookieOptions = {
+  ...cookieOptions,
+  maxAge: 24 * 60 * 60 * 1000,
+};
