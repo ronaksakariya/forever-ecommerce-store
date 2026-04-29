@@ -95,3 +95,14 @@ export const adminLogin = asyncHandler(async (req, res) => {
     .cookie("adminToken", adminToken, adminTokenCookieOptions)
     .json(new ApiResponse(200, { adminToken }, "admin logged in successfully"));
 });
+
+export const adminLogout = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .clearCookie("adminToken", adminTokenCookieOptions)
+    .json(new ApiResponse(200, {}, "admin logged out successfully"));
+});
+
+export const verifyAdmin = asyncHandler(async (req, res) => {
+  return res.status(200).json(new ApiResponse(200, {}, "admin authorized"));
+});

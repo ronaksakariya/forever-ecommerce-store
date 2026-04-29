@@ -12,7 +12,10 @@ connectDatabase();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || `http://localhost:${port}`,
+    origin: [
+      process.env.CLIENT_URL || "http://localhost:5173",
+      process.env.ADMIN_URL || "http://localhost:5174",
+    ],
     credentials: true,
   }),
 );

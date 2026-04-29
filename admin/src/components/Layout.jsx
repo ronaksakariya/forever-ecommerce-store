@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { PlusCircle, List, ClipboardList, LogOut, Menu, X } from "lucide-react";
+import axiosInstance from "../utils/axiosInstance";
 
 const navItems = [
   { to: "/add-items", label: "Add Items", icon: PlusCircle },
@@ -12,7 +13,12 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => navigate("/login");
+  const handleLogout = async () => {
+    const response = await axiosInstance.post("api/user/admin-logout");
+    if (response.data.success) {
+      navigate("/login");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

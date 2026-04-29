@@ -4,13 +4,21 @@ import Layout from "./components/Layout";
 import AddItems from "./pages/AddItems";
 import ListItems from "./pages/ListItems";
 import Orders from "./pages/Orders";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Layout />}>
+        <Route
+          path="/"
+          element={
+            <AdminProtectedRoute>
+              <Layout />
+            </AdminProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/add-items" replace />} />
           <Route path="add-items" element={<AddItems />} />
           <Route path="list-items" element={<ListItems />} />

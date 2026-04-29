@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import axiosInstance from "../utils/axiosInstance";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -8,9 +9,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    navigate("/add-items");
+    try {
+      const response = await axiosInstance.post("/api/user/admin-login", {
+        email,
+        password,
+      });
+      if (response.data.success) {
+        navigate("/add-items");
+      }
+    } catch (error) {
+      console.log(error.response?.data?.message || "login failed");
+    }
   };
 
   return (
