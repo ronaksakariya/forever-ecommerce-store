@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import axiosInstance from "../utils/axiosInstance";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,9 +19,13 @@ export default function Login() {
       });
       if (response.data.success) {
         navigate("/add-items");
+        toast.success("Logged in successfully!");
       }
     } catch (error) {
       console.log(error.response?.data?.message || "login failed");
+      toast.error(
+        `Login failed. ${error.response?.data?.message || error.message}.`,
+      );
     }
   };
 

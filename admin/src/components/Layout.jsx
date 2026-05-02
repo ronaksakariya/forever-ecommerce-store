@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { PlusCircle, List, ClipboardList, LogOut, Menu, X } from "lucide-react";
 import axiosInstance from "../utils/axiosInstance";
+import { toast } from "react-toastify";
 
 const navItems = [
   { to: "/add-items", label: "Add Items", icon: PlusCircle },
@@ -14,9 +15,16 @@ export default function Layout() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    const response = await axiosInstance.post("api/user/admin-logout");
-    if (response.data.success) {
-      navigate("/login");
+    try {
+      const response = await axiosInstance.post("api/user/admin-logout");
+      if (response.data.success) {
+        navigate("/login");
+        toast.success("Logged out successfully!");
+      }
+    } catch (error) {
+      toast.error(
+        `Logout failed. ${error.response?.data?.message || error.message}.`,
+      );
     }
   };
 

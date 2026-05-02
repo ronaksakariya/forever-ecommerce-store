@@ -78,7 +78,7 @@ export const adminLogin = asyncHandler(async (req, res) => {
   }
 
   if (
-    email !== process.env.ADMIN_EMAIL &&
+    email !== process.env.ADMIN_EMAIL ||
     password !== process.env.ADMIN_PASSWORD
   ) {
     throw new ApiError(409, "admin credentials are incorrect");

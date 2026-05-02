@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Upload, X } from "lucide-react";
 import CustomSelect from "../components/CustomSelect";
+import { toast } from "react-toastify";
+import axiosInstance from "../utils/axiosInstance";
 
 const CATEGORIES = ["Men", "Women", "Kids"];
 const SUB_CATEGORIES = ["Topwear", "Bottomwear", "Winterwear"];
-const SIZES = ["S", "M", "L", "XL", "XXL"];
+const SIZES = ["s", "m", "l", "xl", "xxl"];
 
 export default function AddItems() {
   const [images, setImages] = useState([null, null, null, null]);
@@ -19,7 +21,7 @@ export default function AddItems() {
   const handleImageChange = (index, file) => {
     if (!file) return;
     const updated = [...images];
-    updated[index] = URL.createObjectURL(file);
+    updated[index] = file;
     setImages(updated);
   };
 
@@ -35,10 +37,60 @@ export default function AddItems() {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // UI only — no business logic
-    alert("Product Added! (UI demo)");
+
+    if (!name.trim() || !description.trim()) {
+      return toast.error("Product name and description are required.");
+    }
+
+    if (Number(price) <= 0) {
+      return toast.error("Price must be a valid number greater than zero.");
+    }
+
+    if (selectedSizes.length === 0) {
+      return toast.error("Please select at least one product size.");
+    }
+
+    if (images.every((img) => img === null)) {
+      return toast.warning("Please upload at least one image");
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("price", price);
+      formData.append("description", description);
+      formData.append("category", category.toLowerCase());
+      formData.append("subCategory", subCategory.toLowerCase());
+      formData.append("sizes", JSON.stringify(selectedSizes));
+      formData.append("isBestseller", JSON.stringify(bestseller));
+
+      images.forEach((img) => {
+        if (img) {
+          formData.append("images", img);
+        }
+      });
+
+      console.log(Object.fromEntries(formData));
+
+      const response = await axiosInstance.post(
+        "/api/product/add-product",
+        formData,
+      );
+      if (response.data.success) {
+        toast.success("product added successfully");
+
+        setName("");
+        setDescription("");
+        setPrice("");
+        setImages([null, null, null, null]);
+        setSelectedSizes([]);
+        setBestseller(false);
+      }
+    } catch (error) {
+      toast.error(`${error.response?.data?.message || error.message}.`);
+    }
   };
 
   return (
@@ -59,7 +111,7 @@ export default function AddItems() {
                 {img ? (
                   <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-200">
                     <img
-                      src={img}
+                      src={URL.createObjectURL(img)}
                       alt=""
                       className="w-full h-full object-cover"
                     />
@@ -178,7 +230,7 @@ export default function AddItems() {
                     : "bg-gray-100 text-gray-600 border-gray-100 hover:border-gray-300"
                 }`}
               >
-                {size}
+                {size.toUpperCase()}
               </button>
             ))}
           </div>

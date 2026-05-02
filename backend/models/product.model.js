@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema(
     sizes: {
       type: [String],
       required: [true, "product sizes cannot be empty"],
-      enum: ["S", "M", "L", "XL", "XXL"],
+      enum: ["s", "m", "l", "xl", "xxl"],
     },
     isBestseller: {
       type: Boolean,

@@ -5,10 +5,24 @@ import AddItems from "./pages/AddItems";
 import ListItems from "./pages/ListItems";
 import Orders from "./pages/Orders";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import { Bounce, ToastContainer } from "react-toastify";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
