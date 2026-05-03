@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
-import Loading from "./Loading";
 import { Navigate } from "react-router-dom";
+import { Loader } from "lucide-react";
 
 const AdminProtectedRoute = ({ children }) => {
   const [isVerified, setIsVerified] = useState(null);
@@ -16,7 +16,7 @@ const AdminProtectedRoute = ({ children }) => {
     };
     verifyAdmin();
   }, []);
-  if (isVerified === null) return <Loading />;
+  if (isVerified === null) return <Loader />;
 
   if (!isVerified) return <Navigate to="/login" replace />;
 

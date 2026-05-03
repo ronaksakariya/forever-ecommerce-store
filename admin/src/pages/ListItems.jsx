@@ -1,88 +1,7 @@
-import { useState } from "react";
-import { Trash2, Search } from "lucide-react";
-
-const MOCK_PRODUCTS = [
-  {
-    id: 1,
-    name: "Kid Tapered Slim Fit Trouser",
-    category: "Kids",
-    price: 38,
-    image:
-      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=80&h=80&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Men Round Neck Pure Cotton T-shirt",
-    category: "Men",
-    price: 64,
-    image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=80&h=80&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Boy Round Neck Pure Cotton T-shirt",
-    category: "Kids",
-    price: 60,
-    image:
-      "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=80&h=80&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Women Zip-Front Relaxed Fit Jacket",
-    category: "Women",
-    price: 74,
-    image:
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=80&h=80&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Men Tapered Fit Flat-Front Trousers",
-    category: "Men",
-    price: 58,
-    image:
-      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=80&h=80&fit=crop",
-  },
-  {
-    id: 6,
-    name: "Girls Round Neck Cotton Top",
-    category: "Kids",
-    price: 56,
-    image:
-      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=80&h=80&fit=crop",
-  },
-  {
-    id: 7,
-    name: "Women Zip-Front Relaxed Fit Jacket",
-    category: "Women",
-    price: 68,
-    image:
-      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=80&h=80&fit=crop",
-  },
-  {
-    id: 8,
-    name: "Kid Tapered Slim Fit Trouser",
-    category: "Kids",
-    price: 40,
-    image:
-      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=80&h=80&fit=crop",
-  },
-  {
-    id: 9,
-    name: "Men Printed Plain Cotton Shirt",
-    category: "Men",
-    price: 52,
-    image:
-      "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=80&h=80&fit=crop",
-  },
-  {
-    id: 10,
-    name: "Women Zip-Front Relaxed Fit Jacket",
-    category: "Women",
-    price: 78,
-    image:
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=80&h=80&fit=crop",
-  },
-];
+import { useEffect, useState } from "react";
+import { Trash2, Search, Loader, AlertCircle, X } from "lucide-react";
+import axiosInstance from "../utils/axiosInstance";
+import { toast } from "react-toastify";
 
 const categoryColors = {
   Men: "bg-blue-50 text-blue-600",
@@ -91,8 +10,14 @@ const categoryColors = {
 };
 
 export default function ListItems() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setIsLoading] = useState(true);
+  // NEW: State to manage the custom delete modal
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    productId: null,
+  });
 
   const filtered = products.filter(
     (p) =>
@@ -100,11 +25,57 @@ export default function ListItems() {
       p.category.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const deleteProduct = (id) => {
-    if (window.confirm("Remove this product?")) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+  // 1. Triggered when the user clicks the trash icon
+  const initiateDelete = (id) => {
+    setDeleteModal({ isOpen: true, productId: id });
+  };
+
+  // 2. Triggered when the user clicks "Cancel" or the X in the modal
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, productId: null });
+  };
+
+  // 3. Triggered when the user clicks "Yes, Remove" in the modal
+  const confirmDelete = async () => {
+    const id = deleteModal.productId;
+    if (!id) return;
+
+    try {
+      // Close modal immediately for snappy UX
+      setDeleteModal({ isOpen: false, productId: null });
+
+      // Optimistic UI update
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+
+      // Actually delete from backend
+      await axiosInstance.post("/api/remove-product", { id });
+      toast.success("Product removed successfully");
+    } catch (error) {
+      toast.error(`${error.response?.data?.message || error.message}.`);
+      // Optional: Re-fetch products here if deletion fails to restore UI
     }
   };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axiosInstance.get("/api/product/list-products");
+        if (response.data.success) {
+          console.log(response.data.data);
+          setProducts(response.data.data);
+        }
+      } catch (error) {
+        toast.error(`${error.response?.data?.message || error.message}.`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div>
@@ -152,13 +123,13 @@ export default function ListItems() {
           <tbody className="divide-y divide-gray-50">
             {filtered.map((product) => (
               <tr
-                key={product.id}
+                key={product._id}
                 className="hover:bg-gray-50/50 transition-colors group"
               >
                 <td className="px-5 py-3">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100">
                     <img
-                      src={product.image}
+                      src={product.images[0]}
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />
@@ -171,7 +142,7 @@ export default function ListItems() {
                 </td>
                 <td className="px-5 py-3">
                   <span
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryColors[product.category]}`}
+                    className={`text-xs font-medium px-2.5 py-1 capitalize rounded-full ${categoryColors[product.category]}`}
                   >
                     {product.category}
                   </span>
@@ -183,7 +154,7 @@ export default function ListItems() {
                 </td>
                 <td className="px-5 py-3 text-center">
                   <button
-                    onClick={() => deleteProduct(product.id)}
+                    onClick={() => initiateDelete(product._id)}
                     className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
                   >
                     <Trash2 size={15} />
@@ -204,12 +175,12 @@ export default function ListItems() {
       <div className="md:hidden space-y-3">
         {filtered.map((product) => (
           <div
-            key={product.id}
+            key={product._id}
             className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4 shadow-sm"
           >
             <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
               <img
-                src={product.image}
+                src={product.images[0]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -220,7 +191,7 @@ export default function ListItems() {
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <span
-                  className={`text-xs font-medium px-2 py-0.5 rounded-full ${categoryColors[product.category]}`}
+                  className={`text-xs font-medium px-2 capitalize py-0.5 rounded-full ${categoryColors[product.category]}`}
                 >
                   {product.category}
                 </span>
@@ -230,7 +201,7 @@ export default function ListItems() {
               </div>
             </div>
             <button
-              onClick={() => deleteProduct(product.id)}
+              onClick={() => initiateDelete(product.id)}
               className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50 flex-shrink-0"
             >
               <Trash2 size={16} />
@@ -247,6 +218,51 @@ export default function ListItems() {
       <p className="text-xs text-gray-400 mt-4">
         {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
       </p>
+
+      {/* --- CUSTOM DELETE MODAL --- */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20">
+          {/* Modal Content */}
+          <div className="w-full max-w-sm p-6 bg-white shadow-xl rounded-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+                  <AlertCircle size={20} className="text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Remove Product
+                </h3>
+              </div>
+              <button
+                onClick={cancelDelete}
+                className="p-1 text-gray-400 transition-colors rounded-lg hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="mb-6 text-sm text-gray-600">
+              Are you sure you want to remove this product from your store? This
+              action cannot be undone.
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-xl hover:bg-gray-50 active:scale-[0.98]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-xl hover:bg-red-700 active:scale-[0.98]"
+              >
+                Yes, Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
