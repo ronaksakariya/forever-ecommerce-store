@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { toast } from "react-toastify";
 
-import { useCart } from "@/hooks/useCart";
 import { useProducts } from "@/hooks/useProducts";
+import { useShop } from "@/context/ShopContext";
 
 export const useProductDetail = (productId) => {
   const { products } = useProducts();
-  const { addToCart: addCartItem } = useCart();
+  const { addToCart: addCartItem } = useShop();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
 
@@ -49,7 +49,7 @@ export const useProductDetail = (productId) => {
     relatedProducts,
     selectedImageIndex,
     selectedSize,
-    selectedImage: product?.image[selectedImageIndex],
+    selectedImage: product?.images[selectedImageIndex],
     setSelectedImageIndex,
     setSelectedSize,
   };

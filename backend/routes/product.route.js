@@ -14,6 +14,7 @@ router
   .route("/add-product")
   .post(adminAuth, upload.array("images", 5), addProduct);
 router.route("/list-products").get(adminAuth, listProducts);
+router.route("/list").get(listProducts);
 router.route("/remove-product").post(adminAuth, removeProduct);
 router.route("/get-product").get(adminAuth, getProduct);
 

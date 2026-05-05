@@ -3,8 +3,8 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCart } from "@/hooks/useCart";
 import { SHIPPING_FEE } from "@/lib/cart";
+import { useShop } from "@/context/ShopContext";
 
 const CartPage = () => {
   const {
@@ -16,7 +16,7 @@ const CartPage = () => {
     subtotal,
     totalItems,
     updateQuantity,
-  } = useCart();
+  } = useShop();
 
   const total = subtotal + SHIPPING_FEE;
 
@@ -61,7 +61,7 @@ const CartPage = () => {
                     className="aspect-square overflow-hidden rounded-lg bg-[#E5E5E5]"
                   >
                     <img
-                      src={item.product.image[0]}
+                      src={item.product.images[0]}
                       alt={item.product.name}
                       className="h-full w-full object-cover"
                     />
@@ -78,7 +78,9 @@ const CartPage = () => {
                       >
                         {item.product.name}
                       </Link>
-                      <p className="mt-2 text-sm text-[#000000]/70">Size: {item.size}</p>
+                      <p className="mt-2 text-sm text-[#000000]/70">
+                        Size: {item.size}
+                      </p>
                       <p className="mt-2 text-sm font-semibold text-[#000000]">
                         ${item.product.price}
                       </p>
@@ -139,15 +141,21 @@ const CartPage = () => {
             </div>
 
             <aside className="h-fit rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] p-6 lg:sticky lg:top-24">
-              <h2 className="text-lg font-semibold text-[#000000]">Order Summary</h2>
+              <h2 className="text-lg font-semibold text-[#000000]">
+                Order Summary
+              </h2>
               <div className="mt-6 space-y-4 border-b border-[#E5E5E5] pb-6 text-sm text-[#000000]/70">
                 <div className="flex items-center justify-between gap-4">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-[#000000]">${subtotal}</span>
+                  <span className="font-semibold text-[#000000]">
+                    ${subtotal}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span>Shipping</span>
-                  <span className="font-semibold text-[#000000]">${SHIPPING_FEE}</span>
+                  <span className="font-semibold text-[#000000]">
+                    ${SHIPPING_FEE}
+                  </span>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-between gap-4 text-lg font-semibold text-[#000000]">
@@ -171,7 +179,9 @@ const CartPage = () => {
           </div>
         ) : (
           <div className="rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] px-6 py-16 text-center">
-            <h2 className="text-3xl font-semibold text-[#000000]">Your cart is empty.</h2>
+            <h2 className="text-3xl font-semibold text-[#000000]">
+              Your cart is empty.
+            </h2>
             <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#000000]/70">
               Add pieces from the collection and choose a size before checkout.
             </p>

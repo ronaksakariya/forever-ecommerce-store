@@ -26,10 +26,10 @@ export const addProduct = asyncHandler(async (req, res) => {
     !isBestseller ||
     !images
   ) {
-    throw new ApiError(409, "all fields are required");
+    throw new ApiError(400, "all fields are required");
   }
   if (images.length === 0) {
-    throw new ApiError(409, "at least one product image is required");
+    throw new ApiError(400, "at least one product image is required");
   }
 
   const productImages = await Promise.all(
@@ -71,12 +71,12 @@ export const listProducts = asyncHandler(async (req, res) => {
 export const removeProduct = asyncHandler(async (req, res) => {
   const { id } = req.body;
   if (!id) {
-    throw new ApiError(401, "product id is missing");
+    throw new ApiError(400, "product id is missing");
   }
 
   const product = await Product.findByIdAndDelete(id);
   if (!product) {
-    throw new ApiError(409, "product not found");
+    throw new ApiError(404, "product not found");
   }
 
   return res
@@ -89,7 +89,7 @@ export const getProduct = asyncHandler(async (req, res) => {
 
   const product = await Product.findById(id);
   if (!product) {
-    throw new ApiError(409, "product not found");
+    throw new ApiError(404, "product not found");
   }
 
   return res

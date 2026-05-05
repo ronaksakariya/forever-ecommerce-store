@@ -4,7 +4,7 @@ import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 
 import { assets } from "@/assets/frontend_assets/assets";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
+import { useShop } from "@/context/ShopContext";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -15,12 +15,16 @@ const navItems = [
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { totalItems } = useCart();
+  const { totalItems } = useShop();
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#E5E5E5] bg-[#FAF9F6]/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <NavLink to="/" className="flex items-center gap-3" aria-label="Noir Eternal home">
+        <NavLink
+          to="/"
+          className="flex items-center gap-3"
+          aria-label="Noir Eternal home"
+        >
           <img src={assets.logo} alt="Noir Eternal" className="h-8 w-auto" />
         </NavLink>
 
@@ -47,13 +51,14 @@ const Navbar = () => {
             <Search />
           </Button>
           <Button
-            type="button"
+            asChild
             variant="ghost"
             size="icon"
             className="hidden text-[#000000] hover:bg-[#E5E5E5] sm:inline-flex"
-            aria-label="Profile"
           >
-            <User />
+            <Link to="/login" aria-label="Profile">
+              <User />
+            </Link>
           </Button>
           <Button
             asChild

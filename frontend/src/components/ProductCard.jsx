@@ -7,7 +7,7 @@ const ProductCard = ({ product }) => {
       <Link to={`/product/${product._id}`} className="block">
         <div className="aspect-[3/4] overflow-hidden rounded-lg bg-[#E5E5E5]">
           <img
-            src={product.image[0]}
+            src={product.images[0]}
             alt={product.name}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             loading="lazy"
@@ -24,7 +24,9 @@ const ProductCard = ({ product }) => {
           </h3>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <p className="text-base font-semibold text-[#000000]">${product.price}</p>
+          <p className="text-base font-semibold text-[#000000]">
+            ${product.price}
+          </p>
           <Button
             asChild
             variant="outline"

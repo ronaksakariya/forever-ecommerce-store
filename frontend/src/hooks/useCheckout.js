@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 
 import { SHIPPING_FEE } from "@/lib/cart";
-import { useCart } from "@/hooks/useCart";
+import { useShop } from "@/context/ShopContext";
 
 const initialForm = {
   name: "",
@@ -16,7 +16,7 @@ const initialForm = {
 };
 
 export const useCheckout = () => {
-  const { cartItems, subtotal, totalItems } = useCart();
+  const { cartItems, subtotal, totalItems } = useShop();
   const [formData, setFormData] = useState(initialForm);
   const [paymentMethod, setPaymentMethod] = useState("cod");
 
@@ -37,7 +37,9 @@ export const useCheckout = () => {
       return;
     }
 
-    const missingField = Object.entries(formData).find(([, value]) => !value.trim());
+    const missingField = Object.entries(formData).find(
+      ([, value]) => !value.trim(),
+    );
 
     if (missingField) {
       toast.error("Please fill all delivery details.");

@@ -22,7 +22,9 @@ const ProductDetailPage = () => {
     return (
       <section className="bg-[#FAF9F6] px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] px-6 py-16 text-center">
-          <h1 className="text-3xl font-semibold text-[#000000]">Product not found.</h1>
+          <h1 className="text-3xl font-semibold text-[#000000]">
+            Product not found.
+          </h1>
           <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#000000]/70">
             The product you are looking for is unavailable.
           </p>
@@ -43,13 +45,15 @@ const ProductDetailPage = () => {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="grid gap-4 sm:grid-cols-[92px_1fr]">
             <div className="order-2 flex gap-3 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-visible">
-              {product.image.map((image, index) => (
+              {product.images.map((image, index) => (
                 <button
                   key={image}
                   type="button"
                   onClick={() => setSelectedImageIndex(index)}
                   className={`aspect-square w-20 shrink-0 overflow-hidden rounded-lg border bg-[#E5E5E5] sm:w-full ${
-                    selectedImageIndex === index ? "border-[#000000]" : "border-[#E5E5E5]"
+                    selectedImageIndex === index
+                      ? "border-[#000000]"
+                      : "border-[#E5E5E5]"
                   }`}
                   aria-label={`View product image ${index + 1}`}
                 >
@@ -64,7 +68,11 @@ const ProductDetailPage = () => {
             </div>
 
             <div className="order-1 aspect-[4/5] overflow-hidden rounded-lg bg-[#E5E5E5] sm:order-2">
-              <img src={selectedImage} alt={product.name} className="h-full w-full object-cover" />
+              <img
+                src={selectedImage}
+                alt={product.name}
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
 
@@ -75,7 +83,9 @@ const ProductDetailPage = () => {
             <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#000000] sm:text-5xl">
               {product.name}
             </h1>
-            <p className="mt-5 text-2xl font-semibold text-[#000000]">${product.price}</p>
+            <p className="mt-5 text-2xl font-semibold text-[#000000]">
+              ${product.price}
+            </p>
             <p className="mt-6 max-w-2xl text-sm leading-7 text-[#000000]/70">
               {product.description}
             </p>
@@ -91,7 +101,7 @@ const ProductDetailPage = () => {
                     type="button"
                     variant="outline"
                     onClick={() => setSelectedSize(size)}
-                    className={`h-11 min-w-12 border-[#000000] px-4 ${
+                    className={`h-11 min-w-12 border-[#000000] px-4 uppercase ${
                       selectedSize === size
                         ? "bg-[#000000] text-[#FAF9F6] hover:bg-[#000000]/80 hover:text-[#FAF9F6]"
                         : "bg-[#FAF9F6] text-[#000000] hover:bg-[#E5E5E5]"
@@ -127,7 +137,10 @@ const ProductDetailPage = () => {
             />
             <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct._id} product={relatedProduct} />
+                <ProductCard
+                  key={relatedProduct._id}
+                  product={relatedProduct}
+                />
               ))}
             </div>
           </div>

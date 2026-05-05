@@ -25,11 +25,21 @@ const paymentMethods = [
 const formFields = [
   { id: "name", label: "Name", type: "text", autoComplete: "name" },
   { id: "email", label: "Email", type: "email", autoComplete: "email" },
-  { id: "street", label: "Street", type: "text", autoComplete: "street-address" },
+  {
+    id: "street",
+    label: "Street",
+    type: "text",
+    autoComplete: "street-address",
+  },
   { id: "city", label: "City", type: "text", autoComplete: "address-level2" },
   { id: "state", label: "State", type: "text", autoComplete: "address-level1" },
   { id: "zip", label: "Zip", type: "text", autoComplete: "postal-code" },
-  { id: "country", label: "Country", type: "text", autoComplete: "country-name" },
+  {
+    id: "country",
+    label: "Country",
+    type: "text",
+    autoComplete: "country-name",
+  },
   { id: "phone", label: "Phone", type: "tel", autoComplete: "tel" },
 ];
 
@@ -74,21 +84,29 @@ const CheckoutPage = () => {
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-8">
             <section className="rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-[#000000]">Shipping Address</h2>
+              <h2 className="text-lg font-semibold text-[#000000]">
+                Shipping Address
+              </h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {formFields.map((field) => (
                   <label
                     key={field.id}
                     htmlFor={field.id}
-                    className={field.id === "street" ? "sm:col-span-2" : undefined}
+                    className={
+                      field.id === "street" ? "sm:col-span-2" : undefined
+                    }
                   >
-                    <span className="text-sm font-medium text-[#000000]">{field.label}</span>
+                    <span className="text-sm font-medium text-[#000000]">
+                      {field.label}
+                    </span>
                     <Input
                       id={field.id}
                       type={field.type}
                       autoComplete={field.autoComplete}
                       value={formData[field.id]}
-                      onChange={(event) => updateField(field.id, event.target.value)}
+                      onChange={(event) =>
+                        updateField(field.id, event.target.value)
+                      }
                       className="mt-2 h-11"
                     />
                   </label>
@@ -97,7 +115,9 @@ const CheckoutPage = () => {
             </section>
 
             <section className="rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-[#000000]">Payment Method</h2>
+              <h2 className="text-lg font-semibold text-[#000000]">
+                Payment Method
+              </h2>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {paymentMethods.map((method) => (
                   <button
@@ -111,7 +131,11 @@ const CheckoutPage = () => {
                     }`}
                   >
                     {method.logo ? (
-                      <img src={method.logo} alt={method.label} className="max-h-8 object-contain" />
+                      <img
+                        src={method.logo}
+                        alt={method.label}
+                        className="max-h-8 object-contain"
+                      />
                     ) : (
                       method.label
                     )}
@@ -122,19 +146,27 @@ const CheckoutPage = () => {
           </div>
 
           <aside className="h-fit rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] p-6 lg:sticky lg:top-24">
-            <h2 className="text-lg font-semibold text-[#000000]">Cart Totals</h2>
+            <h2 className="text-lg font-semibold text-[#000000]">
+              Cart Totals
+            </h2>
             <div className="mt-6 space-y-4 border-b border-[#E5E5E5] pb-6 text-sm text-[#000000]/70">
               <div className="flex items-center justify-between gap-4">
                 <span>Items</span>
-                <span className="font-semibold text-[#000000]">{totalItems}</span>
+                <span className="font-semibold text-[#000000]">
+                  {totalItems}
+                </span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Subtotal</span>
-                <span className="font-semibold text-[#000000]">${subtotal}</span>
+                <span className="font-semibold text-[#000000]">
+                  ${subtotal}
+                </span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Shipping</span>
-                <span className="font-semibold text-[#000000]">${shippingFee}</span>
+                <span className="font-semibold text-[#000000]">
+                  ${shippingFee}
+                </span>
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between gap-4 text-lg font-semibold text-[#000000]">
@@ -147,7 +179,7 @@ const CheckoutPage = () => {
                 {cartItems.map((item) => (
                   <div key={item.cartItemKey} className="flex gap-3">
                     <img
-                      src={item.product.image[0]}
+                      src={item.product.images[0]}
                       alt={item.product.name}
                       className="size-14 rounded-lg bg-[#E5E5E5] object-cover"
                     />

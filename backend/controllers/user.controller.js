@@ -45,17 +45,17 @@ export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new ApiError(409, "all fields are required");
+    throw new ApiError(400, "all fields are required");
   }
 
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    throw new ApiError(409, "user does not exist");
+    throw new ApiError(404, "user does not exist");
   }
 
   const isPasswordCorrect = await user.checkPassword(password);
   if (!isPasswordCorrect) {
-    throw new ApiError(400, "password is incorrect");
+    throw new ApiError(401, "password is incorrect");
   }
 
   const { accessToken, refreshToken } = await generateAndSaveTokens(user);
@@ -81,7 +81,7 @@ export const adminLogin = asyncHandler(async (req, res) => {
     email !== process.env.ADMIN_EMAIL ||
     password !== process.env.ADMIN_PASSWORD
   ) {
-    throw new ApiError(409, "admin credentials are incorrect");
+    throw new ApiError(401, "admin credentials are incorrect");
   }
 
   const adminToken = await jwt.sign(
