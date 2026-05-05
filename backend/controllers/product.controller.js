@@ -70,6 +70,9 @@ export const listProducts = asyncHandler(async (req, res) => {
 
 export const removeProduct = asyncHandler(async (req, res) => {
   const { id } = req.body;
+  if (!id) {
+    throw new ApiError(401, "product id is missing");
+  }
 
   const product = await Product.findByIdAndDelete(id);
   if (!product) {

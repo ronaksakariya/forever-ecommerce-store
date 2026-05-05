@@ -13,11 +13,23 @@ export default function ListItems() {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setIsLoading] = useState(true);
-  // NEW: State to manage the custom delete modal
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     productId: null,
   });
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axiosInstance.get("/api/product/list-products");
+      if (response.data.success) {
+        setProducts(response.data.data);
+      }
+    } catch (error) {
+      toast.error(`${error.response?.data?.message || error.message}.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filtered = products.filter(
     (p) =>
@@ -25,51 +37,33 @@ export default function ListItems() {
       p.category.toLowerCase().includes(search.toLowerCase()),
   );
 
-  // 1. Triggered when the user clicks the trash icon
   const initiateDelete = (id) => {
     setDeleteModal({ isOpen: true, productId: id });
   };
 
-  // 2. Triggered when the user clicks "Cancel" or the X in the modal
   const cancelDelete = () => {
     setDeleteModal({ isOpen: false, productId: null });
   };
 
-  // 3. Triggered when the user clicks "Yes, Remove" in the modal
   const confirmDelete = async () => {
     const id = deleteModal.productId;
     if (!id) return;
 
     try {
-      // Close modal immediately for snappy UX
       setDeleteModal({ isOpen: false, productId: null });
 
-      // Optimistic UI update
-      setProducts((prev) => prev.filter((p) => p._id !== id));
+      // setProducts((prev) => prev.filter((p) => p._id !== id));
 
-      // Actually delete from backend
-      await axiosInstance.post("/api/remove-product", { id });
+      await axiosInstance.post("/api/product/remove-product", { id });
+      fetchProducts();
       toast.success("Product removed successfully");
     } catch (error) {
-      toast.error(`${error.response?.data?.message || error.message}.`);
-      // Optional: Re-fetch products here if deletion fails to restore UI
+      toast.error("something went wrong while removing product");
+      fetchProducts();
     }
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axiosInstance.get("/api/product/list-products");
-        if (response.data.success) {
-          console.log(response.data.data);
-          setProducts(response.data.data);
-        }
-      } catch (error) {
-        toast.error(`${error.response?.data?.message || error.message}.`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchProducts();
   }, []);
 
@@ -98,7 +92,6 @@ export default function ListItems() {
         </div>
       </div>
 
-      {/* Desktop Table */}
       <div className="hidden md:block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         <table className="w-full">
           <thead>
@@ -171,7 +164,6 @@ export default function ListItems() {
         )}
       </div>
 
-      {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {filtered.map((product) => (
           <div
@@ -201,7 +193,7 @@ export default function ListItems() {
               </div>
             </div>
             <button
-              onClick={() => initiateDelete(product.id)}
+              onClick={() => initiateDelete(product._id)}
               className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50 flex-shrink-0"
             >
               <Trash2 size={16} />
@@ -219,7 +211,6 @@ export default function ListItems() {
         {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
       </p>
 
-      {/* --- CUSTOM DELETE MODAL --- */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20">
           {/* Modal Content */}
