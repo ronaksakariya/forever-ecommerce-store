@@ -6,11 +6,35 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn("Unauthorized or token expired");
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== "/api/user/refresh-token"
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        await axios.post(
+          `${axiosInstance.defaults.baseURL}/api/user/refresh-token`,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        console.error("Refresh token expired.");
+        return Promise.reject(refreshError);
+      }
     }
+
     return Promise.reject(error);
   },
 );

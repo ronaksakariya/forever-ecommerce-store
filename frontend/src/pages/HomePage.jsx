@@ -6,7 +6,6 @@ import { useProducts } from "@/hooks/useProducts";
 
 const HomePage = () => {
   const { latest, bestsellers } = useProducts();
-  console.log("bestsellers", bestsellers);
 
   return (
     <>

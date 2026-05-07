@@ -61,13 +61,69 @@ export const loginUser = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateAndSaveTokens(user);
 
   user.password = undefined;
-  console.log(user);
 
   return res
     .status(200)
     .cookie("accessToken", accessToken, accessTokenCookieOptions)
     .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
     .json(new ApiResponse(200, user, "user logged in successfully"));
+});
+
+export const getUserProfile = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new ApiError(404, "user not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { user }, "user logged in successfully"));
+});
+
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body?.refreshToken;
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "user not authenticated");
+  }
+
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    );
+  } catch (error) {
+    throw new ApiError(401, "Refresh token expired or invalid");
+  }
+
+  const user = await User.findById(decodedToken.id).select("+refreshToken");
+
+  if (!user) {
+    throw new ApiError(401, "Invalid refresh token");
+  }
+
+  if (user?.refreshToken !== incomingRefreshToken) {
+    throw new ApiError(
+      401,
+      "Refresh token has already been used or is invalid",
+    );
+  }
+
+  const { accessToken, refreshToken } = await generateAndSaveTokens(user);
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, accessTokenCookieOptions)
+    .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
+    .json(
+      new ApiResponse(
+        200,
+        { accessToken, refreshToken },
+        "access token refreshed successfully",
+      ),
+    );
 });
 
 export const adminLogin = asyncHandler(async (req, res) => {

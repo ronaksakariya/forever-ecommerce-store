@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axiosInstance from "@/utils/axiosInstance";
+import { useAuth } from "@/context/AuthContext";
 
 const tabs = [
   { id: "login", label: "Login" },
@@ -32,6 +33,10 @@ const AuthPage = () => {
   const [loginValues, setLoginValues] = useState(initialLoginValues);
   const [signupValues, setSignupValues] = useState(initialSignupValues);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const location = useLocation();
+  const { setCurrentUser } = useAuth();
+
+  const from = location.state?.from?.pathname || "/";
 
   const updateLoginValue = (field, value) => {
     setLoginValues((current) => ({ ...current, [field]: value }));
@@ -42,7 +47,11 @@ const AuthPage = () => {
   };
 
   const loginUser = async ({ email, password }) => {
-    await axiosInstance.post("/api/user/login", { email, password });
+    const response = await axiosInstance.post("/api/user/login", {
+      email,
+      password,
+    });
+    return response;
   };
 
   const handleLoginSubmit = async (event) => {
@@ -55,12 +64,14 @@ const AuthPage = () => {
 
     setIsSubmitting(true);
     try {
-      await loginUser({
+      const response = await loginUser({
         email: loginValues.email.trim(),
         password: loginValues.password,
       });
       toast.success("Logged in successfully.");
-      navigate("/");
+
+      setCurrentUser(response.data.data);
+      navigate(from, { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to log in."));
     } finally {
@@ -91,7 +102,8 @@ const AuthPage = () => {
         name: signupValues.name.trim(),
         ...credentials,
       });
-      await loginUser(credentials);
+      const response = await loginUser(credentials);
+      setCurrentUser(response.data.data);
       toast.success("Account created successfully.");
       navigate("/");
     } catch (error) {
