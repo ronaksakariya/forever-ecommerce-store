@@ -7,6 +7,7 @@ import { generateAndSaveTokens } from "../utils/generateTokens.js";
 import {
   accessTokenCookieOptions,
   adminTokenCookieOptions,
+  cookieOptions,
   refreshTokenCookieOptions,
 } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken";
@@ -124,6 +125,18 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
         "access token refreshed successfully",
       ),
     );
+});
+
+export const logoutUser = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  await User.findByIdAndUpdate(user._id, { $unset: { refreshToken: 1 } });
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
 export const adminLogin = asyncHandler(async (req, res) => {

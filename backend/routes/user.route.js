@@ -4,6 +4,7 @@ import {
   adminLogout,
   getUserProfile,
   loginUser,
+  logoutUser,
   refreshAccessToken,
   registerUser,
   verifyAdmin,
@@ -17,6 +18,7 @@ router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 router.route("/verify-user").get(verifyJWT, getUserProfile);
 router.route("/refresh-token").post(refreshAccessToken);
+router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/admin-login").post(adminLogin);
 router.route("/admin-logout").post(adminLogout);
