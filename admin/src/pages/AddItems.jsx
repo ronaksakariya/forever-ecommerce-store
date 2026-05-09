@@ -6,7 +6,7 @@ import axiosInstance from "../utils/axiosInstance";
 
 const CATEGORIES = ["Men", "Women", "Kids"];
 const SUB_CATEGORIES = ["Topwear", "Bottomwear", "Winterwear"];
-const SIZES = ["s", "m", "l", "xl", "xxl"];
+const SIZES = ["S", "M", "L", "XL", "XXL"];
 
 export default function AddItems() {
   const [images, setImages] = useState([null, null, null, null]);
@@ -230,7 +230,7 @@ export default function AddItems() {
                     : "bg-gray-100 text-gray-600 border-gray-100 hover:border-gray-300"
                 }`}
               >
-                {size.toUpperCase()}
+                {size}
               </button>
             ))}
           </div>

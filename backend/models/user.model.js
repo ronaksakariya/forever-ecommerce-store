@@ -6,18 +6,18 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "user name is required filed"],
+      required: [true, "user name is required field"],
       trim: true,
     },
     email: {
       type: String,
-      required: [true, "user email is required filed"],
+      required: [true, "user email is required field"],
       unique: true,
       lowercase: true,
     },
     password: {
       type: String,
-      required: [true, "user password is required filed"],
+      required: [true, "user password is required field"],
       select: false,
     },
     role: {
@@ -25,16 +25,18 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    address: {
-      label: { type: String, default: "Home" },
-      name: String,
-      phone: String,
-      street: String,
-      city: String,
-      state: String,
-      pincode: String,
-      isDefault: { type: Boolean, default: true },
-    },
+    address: [
+      {
+        label: { type: String, default: "Home" },
+        name: String,
+        phone: String,
+        street: String,
+        city: String,
+        state: String,
+        pincode: String,
+        isDefault: { type: Boolean, default: true },
+      },
+    ],
     cartData: [
       {
         product: {

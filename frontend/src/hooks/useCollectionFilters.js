@@ -4,6 +4,10 @@ import { useProducts } from "@/hooks/useProducts";
 
 const PRODUCTS_PER_PAGE = 12;
 
+const normalizeFilterValue = (value) => String(value ?? "").trim().toLowerCase();
+
+const isBestseller = (product) => Boolean(product.isBestseller ?? product.bestseller);
+
 const sortProducts = (products, sortBy) => {
   const sortedProducts = [...products];
 
@@ -17,7 +21,7 @@ const sortProducts = (products, sortBy) => {
 
   if (sortBy === "featured") {
     return sortedProducts.sort(
-      (first, second) => Number(second.bestseller) - Number(first.bestseller),
+      (first, second) => Number(isBestseller(second)) - Number(isBestseller(first)),
     );
   }
 
@@ -70,15 +74,20 @@ export const useCollectionFilters = () => {
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
+    const normalizedCategories = selectedCategories.map(normalizeFilterValue);
+    const normalizedTypes = selectedTypes.map(normalizeFilterValue);
 
     const matchingProducts = products.filter((product) => {
       const matchesSearch =
         !normalizedSearch ||
-        product.name.toLowerCase().includes(normalizedSearch) ||
-        product.description.toLowerCase().includes(normalizedSearch);
+        product.name?.toLowerCase().includes(normalizedSearch) ||
+        product.description?.toLowerCase().includes(normalizedSearch);
       const matchesCategory =
-        selectedCategories.length === 0 || selectedCategories.includes(product.category);
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(product.subCategory);
+        normalizedCategories.length === 0 ||
+        normalizedCategories.includes(normalizeFilterValue(product.category));
+      const matchesType =
+        normalizedTypes.length === 0 ||
+        normalizedTypes.includes(normalizeFilterValue(product.subCategory));
 
       return matchesSearch && matchesCategory && matchesType;
     });

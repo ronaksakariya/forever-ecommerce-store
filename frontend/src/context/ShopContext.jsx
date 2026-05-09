@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
+import { useAuth } from "./AuthContext";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const ShopContext = createContext(null);
@@ -9,7 +10,10 @@ const getCartItemKey = (productId, size) => `${productId}-${size}`;
 
 export const ShopProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    const savedItems = localStorage.getItem("forever_cart");
+    return savedItems ? JSON.parse(savedItems) : [];
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +33,10 @@ export const ShopProvider = ({ children }) => {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("forever_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product, size) => {
     setCartItems((currentItems) => {

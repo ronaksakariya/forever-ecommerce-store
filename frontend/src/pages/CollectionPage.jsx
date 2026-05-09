@@ -1,10 +1,17 @@
 import { useRef } from "react";
-import { Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import ReactPaginateModule from "react-paginate";
 
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useCollectionFilters } from "@/hooks/useCollectionFilters";
 
@@ -43,6 +50,8 @@ const CollectionPage = () => {
     handlePageChange(pageEvent);
     productsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  const selectedSortLabel =
+    sortOptions.find((option) => option.value === sortBy)?.label ?? "Latest";
 
   return (
     <section className="bg-[#FAF9F6] px-4 py-10 sm:px-6 lg:px-8">
@@ -139,17 +148,35 @@ const CollectionPage = () => {
                   className="h-11 pl-11 text-base"
                 />
               </div>
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
-                className="h-10 rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] px-3 text-sm text-[#000000] outline-none focus:border-[#000000]"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-10 w-full items-center justify-between gap-3 rounded-lg border border-[#000000] bg-[#FAF9F6] px-4 text-left text-sm text-[#000000] outline-none transition hover:bg-[#E5E5E5] focus-visible:ring-2 focus-visible:ring-[#000000]/20 sm:w-44"
+                  >
+                    <span className="truncate">{selectedSortLabel}</span>
+                    <ChevronDown className="size-4 shrink-0" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  side="bottom"
+                  sideOffset={6}
+                  className="w-[var(--radix-dropdown-menu-trigger-width)] border border-[#000000] bg-[#FAF9F6] p-1 text-[#000000]"
+                >
+                  <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
+                    {sortOptions.map((option) => (
+                      <DropdownMenuRadioItem
+                        key={option.value}
+                        value={option.value}
+                        className="cursor-pointer rounded-md px-3 py-2 text-sm focus:bg-[#E5E5E5] focus:text-[#000000]"
+                      >
+                        {option.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {filteredProducts.length > 0 ? (
