@@ -195,7 +195,7 @@ export default function ListItems() {
             key={product._id}
             className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4 shadow-sm"
           >
-            <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+            <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
               <img
                 src={product.images[0]}
                 alt={product.name}
@@ -222,7 +222,7 @@ export default function ListItems() {
             </div>
             <button
               onClick={() => initiateDelete(product._id)}
-              className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50 flex-shrink-0"
+              className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50 shrink-0"
             >
               <Trash2 size={16} />
             </button>

@@ -52,10 +52,10 @@ const OrderDetails = ({ order }) => (
     <p className="text-sm text-gray-700">
       Method : {formatPaymentMethod(order.paymentMethod)}
     </p>
+    <p className="text-sm text-gray-700">Payment : {order.paymentStatus}</p>
     <p className="text-sm text-gray-700">
-      Payment : {order.paymentStatus}
+      Date : {formatDate(order.createdAt)}
     </p>
-    <p className="text-sm text-gray-700">Date : {formatDate(order.createdAt)}</p>
   </div>
 );
 
@@ -150,7 +150,7 @@ export default function Orders() {
               {/* MOBILE < 640px */}
               <div className="flex flex-col gap-3 sm:hidden">
                 <div className="flex items-start gap-3">
-                  <div className="w-14 h-14 border border-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 border border-gray-200 rounded flex items-center justify-center shrink-0">
                     <Package
                       size={26}
                       className="text-gray-500"
@@ -186,7 +186,7 @@ export default function Orders() {
               {/* TABLET 640px-1023px */}
               <div className="hidden sm:flex lg:hidden gap-4">
                 <div className="flex gap-3 flex-1 min-w-0">
-                  <div className="w-14 h-14 border border-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 border border-gray-200 rounded flex items-center justify-center shrink-0">
                     <Package
                       size={28}
                       className="text-gray-500"
@@ -206,7 +206,7 @@ export default function Orders() {
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col justify-between flex-shrink-0 w-44">
+                <div className="flex flex-col justify-between shrink-0 w-44">
                   <OrderDetails order={order} />
                   <div className="mt-3 space-y-2">
                     <p className="text-sm font-semibold text-gray-900">
@@ -222,7 +222,7 @@ export default function Orders() {
 
               {/* DESKTOP 1024px+ */}
               <div className="hidden lg:flex items-start gap-4">
-                <div className="w-14 h-14 border border-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                <div className="w-14 h-14 border border-gray-200 rounded flex items-center justify-center shrink-0">
                   <Package
                     size={28}
                     className="text-gray-500"
@@ -241,10 +241,10 @@ export default function Orders() {
                     {order.shippingAddress?.phone}
                   </p>
                 </div>
-                <div className="flex-shrink-0 w-44">
+                <div className="shrink-0 w-44">
                   <OrderDetails order={order} />
                 </div>
-                <div className="flex-shrink-0 flex flex-col items-end gap-3">
+                <div className="shrink-0 flex flex-col items-end gap-3">
                   <p className="text-sm font-semibold text-gray-900">
                     ${order.total}
                   </p>
