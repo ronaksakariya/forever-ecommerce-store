@@ -34,7 +34,7 @@ const App = () => {
     <AuthProvider>
       <ShopProvider>
         <RouterProvider router={router} />
-        <ToastContainer // ✅ inside providers
+        <ToastContainer
           position="top-center"
           autoClose={5000}
           hideProgressBar={false}
