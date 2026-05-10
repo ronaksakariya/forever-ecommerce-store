@@ -12,6 +12,46 @@ import {
 } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken";
 
+const addressFields = [
+  "label",
+  "name",
+  "email",
+  "phone",
+  "street",
+  "city",
+  "state",
+  "zip",
+  "country",
+];
+
+const requiredAddressFields = addressFields.filter((field) => field !== "label");
+
+const normalizeAddress = (payload = {}) => {
+  const normalizedAddress = addressFields.reduce((address, field) => {
+    address[field] = String(payload[field] || "").trim();
+    return address;
+  }, {});
+
+  normalizedAddress.label = normalizedAddress.label || "Home";
+  normalizedAddress.zip = normalizedAddress.zip || String(payload.pincode || "").trim();
+  normalizedAddress.pincode = normalizedAddress.zip;
+  normalizedAddress.isDefault = Boolean(payload.isDefault);
+
+  return normalizedAddress;
+};
+
+const validateAddress = (address) => {
+  const missingField = requiredAddressFields.find((field) => !address[field]);
+
+  if (missingField) {
+    throw new ApiError(400, "all address fields are required");
+  }
+};
+
+const sendUserProfile = (res, user, message) => {
+  return res.status(200).json(new ApiResponse(200, { user }, message));
+};
+
 export const registerUser = asyncHandler(async (req, res) => {
   const { email, password, name } = req.body;
 
@@ -80,6 +120,92 @@ export const getUserProfile = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, { user }, "user logged in successfully"));
+});
+
+export const addAddress = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const address = normalizeAddress(req.body);
+  validateAddress(address);
+
+  if (address.isDefault || user.address.length === 0) {
+    user.address.forEach((savedAddress) => {
+      savedAddress.isDefault = false;
+    });
+    address.isDefault = true;
+  }
+
+  user.address.push(address);
+  await user.save({ validateBeforeSave: false });
+
+  return sendUserProfile(res, user, "address saved successfully");
+});
+
+export const updateAddress = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { addressId } = req.params;
+  const savedAddress = user.address.id(addressId);
+
+  if (!savedAddress) {
+    throw new ApiError(404, "address not found");
+  }
+
+  const nextAddress = normalizeAddress({
+    ...savedAddress.toObject(),
+    ...req.body,
+  });
+  validateAddress(nextAddress);
+
+  if (nextAddress.isDefault) {
+    user.address.forEach((address) => {
+      address.isDefault = address.id === addressId;
+    });
+  } else if (savedAddress.isDefault) {
+    nextAddress.isDefault = true;
+  }
+
+  Object.assign(savedAddress, nextAddress);
+  await user.save({ validateBeforeSave: false });
+
+  return sendUserProfile(res, user, "address updated successfully");
+});
+
+export const deleteAddress = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { addressId } = req.params;
+  const savedAddress = user.address.id(addressId);
+
+  if (!savedAddress) {
+    throw new ApiError(404, "address not found");
+  }
+
+  const wasDefault = savedAddress.isDefault;
+  user.address.pull(addressId);
+
+  if (wasDefault && user.address.length > 0) {
+    user.address[0].isDefault = true;
+  }
+
+  await user.save({ validateBeforeSave: false });
+
+  return sendUserProfile(res, user, "address deleted successfully");
+});
+
+export const setDefaultAddress = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { addressId } = req.params;
+  const savedAddress = user.address.id(addressId);
+
+  if (!savedAddress) {
+    throw new ApiError(404, "address not found");
+  }
+
+  user.address.forEach((address) => {
+    address.isDefault = address.id === addressId;
+  });
+
+  await user.save({ validateBeforeSave: false });
+
+  return sendUserProfile(res, user, "default address updated successfully");
 });
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {

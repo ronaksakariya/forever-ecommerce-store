@@ -7,11 +7,6 @@ import { useCheckout } from "@/hooks/useCheckout";
 
 const paymentMethods = [
   {
-    id: "stripe",
-    label: "Stripe",
-    logo: assets.stripe_logo,
-  },
-  {
     id: "razorpay",
     label: "Razorpay",
     logo: assets.razorpay_logo,
@@ -47,7 +42,10 @@ const CheckoutPage = () => {
   const {
     cartItems,
     formData,
+    isSubmitting,
     paymentMethod,
+    saveAddress,
+    setSaveAddress,
     setPaymentMethod,
     shippingFee,
     submitOrder,
@@ -112,19 +110,28 @@ const CheckoutPage = () => {
                   </label>
                 ))}
               </div>
+              <label className="mt-5 flex cursor-pointer items-center gap-3 text-sm text-[#000000]/80">
+                <input
+                  type="checkbox"
+                  checked={saveAddress}
+                  onChange={(event) => setSaveAddress(event.target.checked)}
+                  className="size-4 accent-[#000000]"
+                />
+                Save this address for future orders
+              </label>
             </section>
 
             <section className="rounded-lg border border-[#E5E5E5] bg-[#FAF9F6] p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-[#000000]">
                 Payment Method
               </h2>
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 {paymentMethods.map((method) => (
                   <button
                     key={method.id}
                     type="button"
                     onClick={() => setPaymentMethod(method.id)}
-                    className={`flex h-20 items-center justify-center rounded-lg border px-4 text-sm font-semibold text-[#000000] transition hover:border-[#000000] ${
+                    className={`flex h-20 items-center justify-center rounded-lg border px-4 text-base font-semibold text-[#000000] transition hover:border-[#000000] ${
                       paymentMethod === method.id
                         ? "border-[#000000] bg-[#E5E5E5]"
                         : "border-[#E5E5E5] bg-[#FAF9F6]"
@@ -202,9 +209,10 @@ const CheckoutPage = () => {
 
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="mt-6 h-12 w-full bg-[#000000] text-base text-[#FAF9F6] hover:bg-[#000000]/80"
             >
-              Place Order
+              {isSubmitting ? "Placing Order..." : "Place Order"}
             </Button>
           </aside>
         </div>

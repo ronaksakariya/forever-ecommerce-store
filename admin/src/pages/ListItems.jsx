@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Trash2, Search, Loader, AlertCircle, X } from "lucide-react";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 
 const categoryColors = {
-  Men: "bg-blue-50 text-blue-600",
-  Women: "bg-pink-50 text-pink-600",
-  Kids: "bg-green-50 text-green-600",
+  men: "bg-blue-50 text-blue-600",
+  women: "bg-pink-50 text-pink-600",
+  kids: "bg-green-50 text-green-600",
 };
+
+const formatCategory = (category) =>
+  category ? `${category.charAt(0).toUpperCase()}${category.slice(1)}` : "";
 
 export default function ListItems() {
   const [products, setProducts] = useState([]);
@@ -18,24 +21,19 @@ export default function ListItems() {
     productId: null,
   });
 
-  const fetchProducts = async () => {
-    try {
-      const response = await axiosInstance.get("/api/product/list-products");
-      if (response.data.success) {
-        setProducts(response.data.data);
-      }
-    } catch (error) {
-      toast.error(`${error.response?.data?.message || error.message}.`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const filtered = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
 
-  const filtered = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase()),
-  );
+    if (!normalizedSearch) {
+      return products;
+    }
+
+    return products.filter(
+      (product) =>
+        product.name?.toLowerCase().includes(normalizedSearch) ||
+        product.category?.toLowerCase().includes(normalizedSearch),
+    );
+  }, [products, search]);
 
   const initiateDelete = (id) => {
     setDeleteModal({ isOpen: true, productId: id });
@@ -52,19 +50,43 @@ export default function ListItems() {
     try {
       setDeleteModal({ isOpen: false, productId: null });
 
-      // setProducts((prev) => prev.filter((p) => p._id !== id));
-
       await axiosInstance.post("/api/product/remove-product", { id });
-      fetchProducts();
+      setProducts((prev) => prev.filter((product) => product._id !== id));
       toast.success("Product removed successfully");
-    } catch (error) {
-      toast.error("something went wrong while removing product");
-      fetchProducts();
+    } catch (deleteError) {
+      toast.error(
+        deleteError.response?.data?.message ||
+          "Something went wrong while removing product.",
+      );
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    let isMounted = true;
+
+    axiosInstance
+      .get("/api/product/list-products")
+      .then((response) => {
+        if (isMounted && response.data.success) {
+          setProducts(response.data.data);
+        }
+      })
+      .catch((fetchError) => {
+        if (isMounted) {
+          toast.error(
+            `${fetchError.response?.data?.message || fetchError.message}.`,
+          );
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
@@ -135,9 +157,12 @@ export default function ListItems() {
                 </td>
                 <td className="px-5 py-3">
                   <span
-                    className={`text-xs font-medium px-2.5 py-1 capitalize rounded-full ${categoryColors[product.category]}`}
+                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                      categoryColors[product.category] ||
+                      "bg-gray-100 text-gray-600"
+                    }`}
                   >
-                    {product.category}
+                    {formatCategory(product.category)}
                   </span>
                 </td>
                 <td className="px-5 py-3">
@@ -183,9 +208,12 @@ export default function ListItems() {
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <span
-                  className={`text-xs font-medium px-2 capitalize py-0.5 rounded-full ${categoryColors[product.category]}`}
+                  className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    categoryColors[product.category] ||
+                    "bg-gray-100 text-gray-600"
+                  }`}
                 >
-                  {product.category}
+                  {formatCategory(product.category)}
                 </span>
                 <span className="text-sm font-semibold text-gray-800">
                   ${product.price}

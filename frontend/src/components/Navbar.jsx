@@ -164,12 +164,21 @@ const Navbar = () => {
               </NavLink>
             ))}
             {currentUser && (
-              <button
-                onClick={handleLogout}
-                className="mt-2 w-full rounded-lg bg-black py-3 text-sm font-medium uppercase tracking-[0.14em] text-white"
-              >
-                Logout
-              </button>
+              <>
+                <NavLink
+                  to="/orders"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="rounded-lg px-3 py-3 text-sm font-medium uppercase tracking-[0.14em]"
+                >
+                  Orders
+                </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 w-full rounded-lg bg-black py-3 text-sm font-medium uppercase tracking-[0.14em] text-white"
+                >
+                  Logout
+                </button>
+              </>
             )}
           </div>
         </nav>

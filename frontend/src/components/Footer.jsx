@@ -10,7 +10,8 @@ const Footer = () => {
         <div>
           <img src={assets.logo} alt="Noir Eternal" className="h-8 w-auto" />
           <p className="mt-5 max-w-sm text-sm leading-6 text-[#000000]/70">
-            Considered clothing for daily rotation, edited in clean forms and quiet details.
+            Considered clothing for daily rotation, edited in clean forms and
+            quiet details.
           </p>
         </div>
         <div>
@@ -20,7 +21,10 @@ const Footer = () => {
           <ul className="mt-4 space-y-3">
             {footerLinks.map((link) => (
               <li key={link}>
-                <Link to="/" className="text-sm text-[#000000]/70 hover:text-[#000000]">
+                <Link
+                  to="/"
+                  className="text-sm text-[#000000]/70 hover:text-[#000000]"
+                >
                   {link}
                 </Link>
               </li>
@@ -38,7 +42,8 @@ const Footer = () => {
         </div>
       </div>
       <div className="mx-auto mt-10 max-w-7xl border-t border-[#E5E5E5] pt-6 text-sm text-[#000000]/60">
-        Copyright 2026 Noir Eternal. All rights reserved.
+        Copyright {new Date().getFullYear()} date Noir Eternal. All rights
+        reserved.
       </div>
     </footer>
   );

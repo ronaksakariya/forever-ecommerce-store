@@ -6,7 +6,9 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import CollectionPage from "./pages/CollectionPage";
 import HomePage from "./pages/HomePage";
+import OrdersPage from "./pages/OrdersPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import ProfilePage from "./pages/ProfilePage";
 import { ShopProvider } from "./context/ShopContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -23,7 +25,11 @@ const router = createBrowserRouter([
 
       {
         element: <ProtectedRoute />,
-        children: [{ path: "/checkout", element: <CheckoutPage /> }],
+        children: [
+          { path: "/checkout", element: <CheckoutPage /> },
+          { path: "/orders", element: <OrdersPage /> },
+          { path: "/profile", element: <ProfilePage /> },
+        ],
       },
     ],
   },

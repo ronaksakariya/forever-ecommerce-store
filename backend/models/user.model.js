@@ -29,10 +29,13 @@ const userSchema = new mongoose.Schema(
       {
         label: { type: String, default: "Home" },
         name: String,
+        email: String,
         phone: String,
         street: String,
         city: String,
         state: String,
+        zip: String,
+        country: String,
         pincode: String,
         isDefault: { type: Boolean, default: true },
       },
@@ -66,7 +69,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
 });

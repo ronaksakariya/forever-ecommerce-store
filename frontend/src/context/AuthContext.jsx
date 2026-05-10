@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 
@@ -8,6 +8,16 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const refreshUser = useCallback(async () => {
+    const response = await axiosInstance.get("/api/user/verify-user");
+
+    if (response.data.success) {
+      setCurrentUser(response.data.data);
+    }
+
+    return response.data.data;
+  }, []);
 
   const logout = async () => {
     try {
@@ -24,11 +34,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await axiosInstance.get("/api/user/verify-user");
-
-        if (response.data.success) {
-          setCurrentUser(response.data.data);
-        }
+        await refreshUser();
       } catch (error) {
         console.log(error.message);
         setCurrentUser(null);
@@ -38,11 +44,11 @@ export const AuthProvider = ({ children }) => {
     };
 
     checkAuthStatus();
-  }, []);
+  }, [refreshUser]);
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, setCurrentUser, isLoading, logout }}
+      value={{ currentUser, setCurrentUser, isLoading, logout, refreshUser }}
     >
       {!isLoading && children}
     </AuthContext.Provider>
