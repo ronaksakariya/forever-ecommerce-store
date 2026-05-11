@@ -17,8 +17,12 @@ const CartPage = () => {
     totalItems,
     updateQuantity,
   } = useShop();
+  console.log("cartItems", cartItems);
 
   const total = subtotal + SHIPPING_FEE;
+  const hasUnavailableItems = cartItems.some(
+    (item) => item.availableStock < item.quantity,
+  );
 
   return (
     <section className="bg-[#FAF9F6] px-4 py-10 sm:px-6 lg:px-8">
@@ -81,6 +85,13 @@ const CartPage = () => {
                       <p className="mt-2 text-sm text-[#000000]/70">
                         Size: {item.size}
                       </p>
+                      {item.availableStock < item.quantity ? (
+                        <p className="mt-2 text-sm font-medium text-red-600">
+                          {item.availableStock > 0
+                            ? `Only ${item.availableStock} available`
+                            : "Out of stock"}
+                        </p>
+                      ) : null}
                       <p className="mt-2 text-sm font-semibold text-[#000000]">
                         ${item.product.price}
                       </p>
@@ -101,6 +112,7 @@ const CartPage = () => {
                         <Input
                           type="number"
                           min="1"
+                          max={item.availableStock || 1}
                           value={item.quantity}
                           onChange={(event) =>
                             updateQuantity(item.cartItemKey, event.target.value)
@@ -113,6 +125,7 @@ const CartPage = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => increaseQuantity(item.cartItemKey)}
+                          disabled={item.quantity >= item.availableStock}
                           className="text-[#000000] hover:bg-[#E5E5E5]"
                           aria-label="Increase quantity"
                         >
@@ -162,12 +175,22 @@ const CartPage = () => {
                 <span>Total</span>
                 <span>${total}</span>
               </div>
-              <Button
-                asChild
-                className="mt-6 h-12 w-full bg-[#000000] text-base text-[#FAF9F6] hover:bg-[#000000]/80"
-              >
-                <Link to="/checkout">Checkout</Link>
-              </Button>
+              {hasUnavailableItems ? (
+                <Button
+                  type="button"
+                  disabled
+                  className="mt-6 h-12 w-full bg-[#000000] text-base text-[#FAF9F6] hover:bg-[#000000]/80"
+                >
+                  Checkout
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  className="mt-6 h-12 w-full bg-[#000000] text-base text-[#FAF9F6] hover:bg-[#000000]/80"
+                >
+                  <Link to="/checkout">Checkout</Link>
+                </Button>
+              )}
               <Button
                 asChild
                 variant="outline"

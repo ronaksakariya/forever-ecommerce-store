@@ -35,6 +35,7 @@ export default function App() {
         >
           <Route index element={<Navigate to="/add-items" replace />} />
           <Route path="add-items" element={<AddItems />} />
+          <Route path="edit-items/:productId" element={<AddItems />} />
           <Route path="list-items" element={<ListItems />} />
           <Route path="orders" element={<Orders />} />
         </Route>

@@ -4,6 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import SectionTitle from "@/components/SectionTitle";
 import { Button } from "@/components/ui/button";
 import { useProductDetail } from "@/hooks/useProductDetail";
+import { getStockForSize } from "@/lib/cart";
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -95,21 +96,32 @@ const ProductDetailPage = () => {
                 Select Size
               </h2>
               <div className="mt-4 flex flex-wrap gap-3">
-                {product.sizes.map((size) => (
-                  <Button
-                    key={size}
-                    type="button"
-                    variant="outline"
-                    onClick={() => setSelectedSize(size)}
-                    className={`h-11 min-w-12 border-[#000000] px-4 uppercase ${
-                      selectedSize === size
-                        ? "bg-[#000000] text-[#FAF9F6] hover:bg-[#000000]/80 hover:text-[#FAF9F6]"
-                        : "bg-[#FAF9F6] text-[#000000] hover:bg-[#E5E5E5]"
-                    }`}
-                  >
-                    {size}
-                  </Button>
-                ))}
+                {product.sizes.map((size) => {
+                  const availableStock = getStockForSize(product, size);
+                  const isSoldOut = availableStock < 1;
+
+                  return (
+                    <Button
+                      key={size}
+                      type="button"
+                      variant="outline"
+                      disabled={isSoldOut}
+                      onClick={() => setSelectedSize(size)}
+                      className={`h-11 min-w-12 border-[#000000] px-4 uppercase ${
+                        selectedSize === size
+                          ? "bg-[#000000] text-[#FAF9F6] hover:bg-[#000000]/80 hover:text-[#FAF9F6]"
+                          : "bg-[#FAF9F6] text-[#000000] hover:bg-[#E5E5E5]"
+                      } ${
+                        isSoldOut
+                          ? "cursor-not-allowed border-[#E5E5E5] text-[#000000]/35 line-through hover:bg-[#FAF9F6]"
+                          : ""
+                      }`}
+                      aria-label={`${size}${isSoldOut ? " sold out" : ""}`}
+                    >
+                      {size}
+                    </Button>
+                  );
+                })}
               </div>
             </div>
 

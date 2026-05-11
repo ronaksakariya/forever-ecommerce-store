@@ -29,7 +29,8 @@ const getInitialForm = (currentUser) => {
 
 export const useCheckout = () => {
   const { currentUser, setCurrentUser } = useAuth();
-  const { cartItems, clearCart, subtotal, totalItems } = useShop();
+  const { cartItems, clearCart, refreshProducts, subtotal, totalItems } =
+    useShop();
   const [formData, setFormData] = useState(() => getInitialForm(currentUser));
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [saveAddress, setSaveAddress] = useState(false);
@@ -54,6 +55,17 @@ export const useCheckout = () => {
 
     if (cartItems.length === 0) {
       toast.error("Your cart is empty.");
+      return;
+    }
+
+    const unavailableItem = cartItems.find(
+      (item) => item.availableStock < item.quantity,
+    );
+
+    if (unavailableItem) {
+      toast.error(
+        `${unavailableItem.product.name} has only ${unavailableItem.availableStock} left in size ${unavailableItem.size}.`,
+      );
       return;
     }
 
@@ -109,6 +121,11 @@ export const useCheckout = () => {
         }
 
         clearCart();
+        try {
+          await refreshProducts({ showError: false });
+        } catch {
+          toast.info("Order placed, but latest stock could not be refreshed.");
+        }
         toast.success("Order placed successfully.");
         navigate("/orders");
       }

@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+const PRODUCT_SIZES = ["S", "M", "L", "XL", "XXL"];
+
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, "product name cannot be empty"] },
@@ -25,7 +27,25 @@ const productSchema = new mongoose.Schema(
     sizes: {
       type: [String],
       required: [true, "product sizes cannot be empty"],
-      enum: ["S", "M", "L", "XL", "XXL"],
+      enum: PRODUCT_SIZES,
+    },
+    stock: {
+      type: [
+        {
+          size: {
+            type: String,
+            required: true,
+            enum: PRODUCT_SIZES,
+          },
+          quantity: {
+            type: Number,
+            required: true,
+            min: 0,
+            default: 0,
+          },
+        },
+      ],
+      default: [],
     },
     isBestseller: {
       type: Boolean,

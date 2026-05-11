@@ -105,7 +105,7 @@ const AuthPage = () => {
       const response = await loginUser(credentials);
       setCurrentUser(response.data.data);
       toast.success("Account created successfully.");
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to create account."));
     } finally {

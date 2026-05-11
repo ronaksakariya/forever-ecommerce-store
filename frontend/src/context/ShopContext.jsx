@@ -10,6 +10,7 @@ import {
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 import { useAuth } from "./AuthContext";
+import { getStockForSize } from "@/lib/cart";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const ShopContext = createContext(null);
@@ -117,24 +118,27 @@ export const ShopProvider = ({ children }) => {
   const userId = activeUser?._id;
   const userCartData = activeUser?.cartData;
 
+  const refreshProducts = useCallback(async ({ showError = true } = {}) => {
+    try {
+      const response = await axiosInstance.get("/api/product/list");
+      if (response.data.success) {
+        setProducts(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      if (showError) {
+        toast.error("Failed to load store inventory.");
+      }
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // fetch products
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axiosInstance.get("/api/product/list");
-        if (response.data.success) {
-          setProducts(response.data.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-        toast.error("Failed to load store inventory.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+    refreshProducts();
+  }, [refreshProducts]);
 
   useEffect(() => {
     try {
@@ -194,6 +198,12 @@ export const ShopProvider = ({ children }) => {
       return;
     }
 
+    const availableStock = getStockForSize(product, size);
+    if (availableStock < 1) {
+      toast.error("That size is sold out.");
+      return;
+    }
+
     setCartItems((currentItems) => {
       const cartItemKey = getCartItemKey(productId, size);
       const existingItem = currentItems.find(
@@ -201,6 +211,11 @@ export const ShopProvider = ({ children }) => {
       );
 
       if (existingItem) {
+        if (existingItem.quantity >= availableStock) {
+          toast.error(`Only ${availableStock} left in that size.`);
+          return currentItems;
+        }
+
         return currentItems.map((item) =>
           item.cartItemKey === cartItemKey
             ? { ...item, quantity: item.quantity + 1 }
@@ -223,23 +238,51 @@ export const ShopProvider = ({ children }) => {
   const updateQuantity = useCallback((cartItemKey, quantity) => {
     const safeQuantity = normalizeQuantity(quantity);
     setCartItems((currentItems) =>
-      currentItems.map((item) =>
-        item.cartItemKey === cartItemKey
-          ? { ...item, quantity: safeQuantity }
-          : item,
-      ),
+      currentItems.map((item) => {
+        if (item.cartItemKey !== cartItemKey) {
+          return item;
+        }
+
+        const product = products.find(
+          (currentProduct) => currentProduct._id === item.productId,
+        );
+        const availableStock = getStockForSize(product, item.size);
+
+        if (availableStock < 1) {
+          toast.error("That size is sold out.");
+          return { ...item, quantity: 1 };
+        }
+
+        if (safeQuantity > availableStock) {
+          toast.error(`Only ${availableStock} left in that size.`);
+        }
+
+        return { ...item, quantity: Math.min(safeQuantity, availableStock) };
+      }),
     );
-  }, []);
+  }, [products]);
 
   const increaseQuantity = useCallback((cartItemKey) => {
     setCartItems((currentItems) =>
-      currentItems.map((item) =>
-        item.cartItemKey === cartItemKey
-          ? { ...item, quantity: item.quantity + 1 }
-          : item,
-      ),
+      currentItems.map((item) => {
+        if (item.cartItemKey !== cartItemKey) {
+          return item;
+        }
+
+        const product = products.find(
+          (currentProduct) => currentProduct._id === item.productId,
+        );
+        const availableStock = getStockForSize(product, item.size);
+
+        if (item.quantity >= availableStock) {
+          toast.error(`Only ${availableStock} left in that size.`);
+          return item;
+        }
+
+        return { ...item, quantity: item.quantity + 1 };
+      }),
     );
-  }, []);
+  }, [products]);
 
   const decreaseQuantity = useCallback((cartItemKey) => {
     setCartItems((currentItems) =>
@@ -273,6 +316,7 @@ export const ShopProvider = ({ children }) => {
         return {
           ...item,
           product,
+          availableStock: getStockForSize(product, item.size),
           total: product.price * item.quantity,
         };
       })
@@ -297,6 +341,7 @@ export const ShopProvider = ({ children }) => {
       decreaseQuantity,
       removeFromCart,
       clearCart,
+      refreshProducts,
       subtotal,
       totalItems,
     };
@@ -308,6 +353,7 @@ export const ShopProvider = ({ children }) => {
     increaseQuantity,
     isLoading,
     products,
+    refreshProducts,
     removeFromCart,
     updateQuantity,
   ]);

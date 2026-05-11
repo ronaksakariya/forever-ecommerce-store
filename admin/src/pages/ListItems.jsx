@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Trash2, Search, Loader, AlertCircle, X } from "lucide-react";
+import { Trash2, Search, Loader, AlertCircle, X, Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 
@@ -13,6 +14,7 @@ const formatCategory = (category) =>
   category ? `${category.charAt(0).toUpperCase()}${category.slice(1)}` : "";
 
 export default function ListItems() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setIsLoading] = useState(true);
@@ -60,6 +62,9 @@ export default function ListItems() {
       );
     }
   };
+
+  const getVisibleStock = (product) =>
+    product.stock?.filter((item) => Number(item.quantity || 0) > 0) || [];
 
   useEffect(() => {
     let isMounted = true;
@@ -130,6 +135,9 @@ export default function ListItems() {
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5">
                 Price
               </th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5">
+                Stock
+              </th>
               <th className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5">
                 Action
               </th>
@@ -170,13 +178,41 @@ export default function ListItems() {
                     ${product.price}
                   </span>
                 </td>
+                <td className="px-5 py-3">
+                  {getVisibleStock(product).length > 0 ? (
+                    <div className="flex max-w-56 flex-wrap gap-1.5">
+                      {getVisibleStock(product).map((item) => (
+                        <span
+                          key={`${product._id}-${item.size}`}
+                          className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700"
+                        >
+                          {item.size}: {item.quantity}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs font-medium text-red-500">
+                      Out of stock
+                    </span>
+                  )}
+                </td>
                 <td className="px-5 py-3 text-center">
-                  <button
-                    onClick={() => initiateDelete(product._id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => navigate(`/edit-items/${product._id}`)}
+                      className="text-gray-400 hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
+                      aria-label="Edit product"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      onClick={() => initiateDelete(product._id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
+                      aria-label="Delete product"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -219,7 +255,30 @@ export default function ListItems() {
                   ${product.price}
                 </span>
               </div>
+              {getVisibleStock(product).length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {getVisibleStock(product).map((item) => (
+                    <span
+                      key={`${product._id}-${item.size}`}
+                      className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700"
+                    >
+                      {item.size}: {item.quantity}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 text-xs font-medium text-red-500">
+                  Out of stock
+                </p>
+              )}
             </div>
+            <button
+              onClick={() => navigate(`/edit-items/${product._id}`)}
+              className="text-gray-400 hover:text-gray-900 transition-colors p-2 rounded-xl hover:bg-gray-100 shrink-0"
+              aria-label="Edit product"
+            >
+              <Pencil size={16} />
+            </button>
             <button
               onClick={() => initiateDelete(product._id)}
               className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50 shrink-0"

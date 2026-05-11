@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 
 import { useProducts } from "@/hooks/useProducts";
 import { useShop } from "@/context/ShopContext";
+import { getStockForSize } from "@/lib/cart";
 
 export const useProductDetail = (productId) => {
   const { products } = useProducts();
@@ -36,6 +37,11 @@ export const useProductDetail = (productId) => {
 
     if (!selectedSize) {
       toast.error("Please select size.");
+      return;
+    }
+
+    if (getStockForSize(product, selectedSize) < 1) {
+      toast.error("That size is sold out.");
       return;
     }
 

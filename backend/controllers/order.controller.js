@@ -33,6 +33,34 @@ const normalizeAddress = (shippingAddress = {}) => {
   }, {});
 };
 
+const aggregateRequestedItems = (items) => {
+  return items.reduce((aggregatedItems, item) => {
+    const productId = String(item.productId || item.product || "");
+    const size = item.size;
+    const quantity = normalizeQuantity(item.quantity);
+    const itemKey = `${productId}-${size}`;
+    const existingItem = aggregatedItems.get(itemKey);
+
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      return aggregatedItems;
+    }
+
+    aggregatedItems.set(itemKey, {
+      productId,
+      size,
+      quantity,
+    });
+
+    return aggregatedItems;
+  }, new Map());
+};
+
+const getStockQuantity = (product, size) => {
+  const stockItem = product.stock?.find((item) => item.size === size);
+  return Number(stockItem?.quantity || 0);
+};
+
 export const placeOrder = asyncHandler(async (req, res) => {
   const { items, paymentMethod, shippingAddress } = req.body;
 
@@ -53,11 +81,7 @@ export const placeOrder = asyncHandler(async (req, res) => {
     throw new ApiError(400, "all delivery details are required");
   }
 
-  const requestedItems = items.map((item) => ({
-    productId: String(item.productId || item.product || ""),
-    size: item.size,
-    quantity: normalizeQuantity(item.quantity),
-  }));
+  const requestedItems = [...aggregateRequestedItems(items).values()];
 
   if (
     requestedItems.some(
@@ -87,6 +111,14 @@ export const placeOrder = asyncHandler(async (req, res) => {
       throw new ApiError(400, `${product.name} is not available in that size`);
     }
 
+    const availableStock = getStockQuantity(product, item.size);
+    if (availableStock < item.quantity) {
+      throw new ApiError(
+        400,
+        `${product.name} has only ${availableStock} left in size ${item.size}`,
+      );
+    }
+
     return {
       product: product._id,
       name: product.name,
@@ -101,6 +133,30 @@ export const placeOrder = asyncHandler(async (req, res) => {
     (total, item) => total + item.price * item.quantity,
     0,
   );
+
+  const stockUpdates = await Promise.all(
+    requestedItems.map((item) =>
+      Product.updateOne(
+        {
+          _id: item.productId,
+          stock: {
+            $elemMatch: {
+              size: item.size,
+              quantity: { $gte: item.quantity },
+            },
+          },
+        },
+        { $inc: { "stock.$.quantity": -item.quantity } },
+      ),
+    ),
+  );
+
+  if (stockUpdates.some((updateResult) => updateResult.modifiedCount !== 1)) {
+    throw new ApiError(
+      400,
+      "one or more products no longer have enough stock",
+    );
+  }
 
   const order = await Order.create({
     user: req.user._id,
