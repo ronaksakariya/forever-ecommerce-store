@@ -17,7 +17,7 @@ export const uploadOnCloudinary = async (localFilePath) => {
     });
 
     fs.unlinkSync(localFilePath);
-    return result.url;
+    return result.secure_url;
   } catch (error) {
     console.log(
       "error occurred while uploading image to cloudinary",
