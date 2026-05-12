@@ -85,7 +85,7 @@ const ProductDetailPage = () => {
               {product.name}
             </h1>
             <p className="mt-5 text-2xl font-semibold text-[#000000]">
-              ${product.price}
+              ₹{product.price}
             </p>
             <p className="mt-6 max-w-2xl text-sm leading-7 text-[#000000]/70">
               {product.description}
@@ -113,7 +113,7 @@ const ProductDetailPage = () => {
                           : "bg-[#FAF9F6] text-[#000000] hover:bg-[#E5E5E5]"
                       } ${
                         isSoldOut
-                          ? "cursor-not-allowed border-[#E5E5E5] text-[#000000]/35 line-through hover:bg-[#FAF9F6]"
+                          ? "cursor-not-allowed border-[#E5E5E5] text-[#000000]/35 hover:bg-[#FAF9F6]"
                           : ""
                       }`}
                       aria-label={`${size}${isSoldOut ? " sold out" : ""}`}

@@ -25,7 +25,7 @@ const ProductCard = ({ product }) => {
         </div>
         <div className="flex items-center justify-between gap-3">
           <p className="text-base font-semibold text-[#000000]">
-            ${product.price}
+            ₹{product.price}
           </p>
           <Button
             asChild

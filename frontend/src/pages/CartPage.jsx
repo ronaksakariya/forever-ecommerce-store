@@ -93,7 +93,7 @@ const CartPage = () => {
                         </p>
                       ) : null}
                       <p className="mt-2 text-sm font-semibold text-[#000000]">
-                        ${item.product.price}
+                        ₹{item.product.price}
                       </p>
                     </div>
 
@@ -134,7 +134,7 @@ const CartPage = () => {
                       </div>
 
                       <p className="min-w-20 text-right text-base font-semibold text-[#000000]">
-                        ${item.total}
+                        ₹{item.total}
                       </p>
 
                       <Button
@@ -161,19 +161,19 @@ const CartPage = () => {
                 <div className="flex items-center justify-between gap-4">
                   <span>Subtotal</span>
                   <span className="font-semibold text-[#000000]">
-                    ${subtotal}
+                    ₹{subtotal}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span>Shipping</span>
                   <span className="font-semibold text-[#000000]">
-                    ${SHIPPING_FEE}
+                    ₹{SHIPPING_FEE}
                   </span>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-between gap-4 text-lg font-semibold text-[#000000]">
                 <span>Total</span>
-                <span>${total}</span>
+                <span>₹{total}</span>
               </div>
               {hasUnavailableItems ? (
                 <Button

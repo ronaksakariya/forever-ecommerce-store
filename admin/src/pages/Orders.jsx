@@ -8,7 +8,7 @@ import axiosInstance from "../utils/axiosInstance";
 const formatDate = (date) => new Date(date).toLocaleDateString("en-US");
 
 const formatPaymentMethod = (method) =>
-  method === "cod" ? "COD" : String(method || "").toUpperCase();
+  method === "cod" ? "COD" : "RAZORPAY";
 
 const getCustomerName = (order) =>
   order.shippingAddress?.name || order.user?.name || "Customer";
@@ -173,7 +173,7 @@ export default function Orders() {
                 <OrderDetails order={order} />
                 <div className="flex items-center gap-4">
                   <p className="text-sm font-semibold text-gray-900">
-                    ${order.total}
+                    ₹{order.total}
                   </p>
                   <StatusSelect
                     value={order.status}
@@ -210,7 +210,7 @@ export default function Orders() {
                   <OrderDetails order={order} />
                   <div className="mt-3 space-y-2">
                     <p className="text-sm font-semibold text-gray-900">
-                      ${order.total}
+                      ₹{order.total}
                     </p>
                     <StatusSelect
                       value={order.status}
@@ -246,7 +246,7 @@ export default function Orders() {
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-3">
                   <p className="text-sm font-semibold text-gray-900">
-                    ${order.total}
+                    ₹{order.total}
                   </p>
                   <StatusSelect
                     value={order.status}

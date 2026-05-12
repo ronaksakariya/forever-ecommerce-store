@@ -26,6 +26,18 @@ const addressFields = [
 
 const requiredAddressFields = addressFields.filter((field) => field !== "label");
 
+const normalizeIndianPhone = (phone = "") => {
+  const compactPhone = String(phone).trim().replace(/\s+/g, "");
+
+  if (!compactPhone) return "";
+  if (compactPhone.startsWith("+91")) return compactPhone;
+  if (compactPhone.startsWith("91") && compactPhone.length === 12) {
+    return `+${compactPhone}`;
+  }
+
+  return `+91${compactPhone.replace(/^0+/, "")}`;
+};
+
 const normalizeAddress = (payload = {}) => {
   const normalizedAddress = addressFields.reduce((address, field) => {
     address[field] = String(payload[field] || "").trim();
@@ -33,6 +45,7 @@ const normalizeAddress = (payload = {}) => {
   }, {});
 
   normalizedAddress.label = normalizedAddress.label || "Home";
+  normalizedAddress.phone = normalizeIndianPhone(normalizedAddress.phone);
   normalizedAddress.zip = normalizedAddress.zip || String(payload.pincode || "").trim();
   normalizedAddress.pincode = normalizedAddress.zip;
   normalizedAddress.isDefault = Boolean(payload.isDefault);

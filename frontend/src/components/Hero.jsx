@@ -22,14 +22,14 @@ const Hero = () => {
               asChild
               className="h-12 bg-[#000000] px-8 text-base text-[#FAF9F6] hover:bg-[#000000]/80"
             >
-              <Link to="/collection">Shop Latest</Link>
+              <Link to="/collection?sort=latest">Shop Latest</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               className="h-12 border-[#000000] bg-[#FAF9F6] px-8 text-base text-[#000000] hover:bg-[#000000] hover:text-[#FAF9F6]"
             >
-              <Link to="/collection">View Bestsellers</Link>
+              <Link to="/collection?sort=featured">View Bestsellers</Link>
             </Button>
           </div>
         </div>

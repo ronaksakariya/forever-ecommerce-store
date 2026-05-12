@@ -13,7 +13,7 @@ const formatDate = (date) =>
   }).format(new Date(date));
 
 const formatPaymentMethod = (method) =>
-  method === "cod" ? "Cash on Delivery" : method;
+  method === "cod" ? "Cash on Delivery" : "Razorpay";
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -126,7 +126,7 @@ const OrdersPage = () => {
                               Size {item.size} / Qty {item.quantity}
                             </p>
                             <p className="mt-1 text-sm font-semibold text-[#000000]">
-                              ${item.price}
+                              ₹{item.price}
                             </p>
                           </div>
                         </div>
@@ -157,7 +157,7 @@ const OrdersPage = () => {
                       <span className="font-medium text-[#000000]">
                         Total:
                       </span>{" "}
-                      ${order.total}
+                      ₹{order.total}
                     </p>
                   </div>
                 </div>

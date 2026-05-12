@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
+import Razorpay from "razorpay";
 
 import { Order, ORDER_STATUSES } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
@@ -61,13 +63,18 @@ const getStockQuantity = (product, size) => {
   return Number(stockItem?.quantity || 0);
 };
 
-export const placeOrder = asyncHandler(async (req, res) => {
-  const { items, paymentMethod, shippingAddress } = req.body;
-
-  if (paymentMethod !== "cod") {
-    throw new ApiError(400, "Cash on Delivery is the only available payment");
+const getRazorpayInstance = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new ApiError(500, "Razorpay credentials are not configured");
   }
 
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+};
+
+const buildOrderDetails = async ({ items, shippingAddress }) => {
   if (!Array.isArray(items) || items.length === 0) {
     throw new ApiError(400, "order items are required");
   }
@@ -134,6 +141,17 @@ export const placeOrder = asyncHandler(async (req, res) => {
     0,
   );
 
+  return {
+    address,
+    requestedItems,
+    orderItems,
+    subtotal,
+    shippingFee: SHIPPING_FEE,
+    total: subtotal + SHIPPING_FEE,
+  };
+};
+
+const reduceStock = async (requestedItems) => {
   const stockUpdates = await Promise.all(
     requestedItems.map((item) =>
       Product.updateOne(
@@ -157,17 +175,29 @@ export const placeOrder = asyncHandler(async (req, res) => {
       "one or more products no longer have enough stock",
     );
   }
+};
+
+export const placeOrder = asyncHandler(async (req, res) => {
+  const { items, paymentMethod, shippingAddress } = req.body;
+
+  if (paymentMethod !== "cod") {
+    throw new ApiError(400, "invalid payment method");
+  }
+
+  const orderDetails = await buildOrderDetails({ items, shippingAddress });
+
+  await reduceStock(orderDetails.requestedItems);
 
   const order = await Order.create({
     user: req.user._id,
-    items: orderItems,
-    shippingAddress: address,
+    items: orderDetails.orderItems,
+    shippingAddress: orderDetails.address,
     paymentMethod: "cod",
     paymentStatus: "Pending",
     status: "Order Placed",
-    subtotal,
-    shippingFee: SHIPPING_FEE,
-    total: subtotal + SHIPPING_FEE,
+    subtotal: orderDetails.subtotal,
+    shippingFee: orderDetails.shippingFee,
+    total: orderDetails.total,
   });
 
   req.user.cartData = [];
@@ -176,6 +206,123 @@ export const placeOrder = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(201, order, "order placed successfully"));
+});
+
+export const createRazorpayOrder = asyncHandler(async (req, res) => {
+  const { items, paymentMethod, shippingAddress } = req.body;
+
+  if (paymentMethod !== "razorpay") {
+    throw new ApiError(400, "invalid payment method");
+  }
+
+  const orderDetails = await buildOrderDetails({ items, shippingAddress });
+  const razorpay = getRazorpayInstance();
+
+  const order = await Order.create({
+    user: req.user._id,
+    items: orderDetails.orderItems,
+    shippingAddress: orderDetails.address,
+    paymentMethod: "razorpay",
+    paymentStatus: "Pending",
+    status: "Order Placed",
+    subtotal: orderDetails.subtotal,
+    shippingFee: orderDetails.shippingFee,
+    total: orderDetails.total,
+  });
+
+  const razorpayOrder = await razorpay.orders.create({
+    amount: Math.round(orderDetails.total * 100),
+    currency: "INR",
+    receipt: order._id.toString(),
+  });
+
+  order.razorpayOrderId = razorpayOrder.id;
+  await order.save();
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      {
+        order,
+        razorpayOrder,
+        keyId: process.env.RAZORPAY_KEY_ID,
+      },
+      "Razorpay order created successfully",
+    ),
+  );
+});
+
+export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
+  const {
+    orderId,
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+  } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new ApiError(400, "invalid order id");
+  }
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    throw new ApiError(400, "payment verification details are required");
+  }
+
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    throw new ApiError(500, "Razorpay credentials are not configured");
+  }
+
+  const order = await Order.findOne({
+    _id: orderId,
+    user: req.user._id,
+    paymentMethod: "razorpay",
+  });
+
+  if (!order) {
+    throw new ApiError(404, "order not found");
+  }
+
+  if (order.paymentStatus === "Done") {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, order, "payment already verified"));
+  }
+
+  if (order.razorpayOrderId !== razorpay_order_id) {
+    order.paymentStatus = "Failed";
+    await order.save();
+    throw new ApiError(400, "invalid Razorpay order id");
+  }
+
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
+
+  if (expectedSignature !== razorpay_signature) {
+    order.paymentStatus = "Failed";
+    await order.save();
+    throw new ApiError(400, "payment verification failed");
+  }
+
+  const requestedItems = order.items.map((item) => ({
+    productId: item.product.toString(),
+    size: item.size,
+    quantity: item.quantity,
+  }));
+
+  await reduceStock(requestedItems);
+
+  order.paymentStatus = "Done";
+  order.razorpayPaymentId = razorpay_payment_id;
+  await order.save();
+
+  req.user.cartData = [];
+  await req.user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, order, "payment verified successfully"));
 });
 
 export const getMyOrders = asyncHandler(async (req, res) => {

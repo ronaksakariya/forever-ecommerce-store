@@ -166,19 +166,19 @@ const CheckoutPage = () => {
               <div className="flex items-center justify-between gap-4">
                 <span>Subtotal</span>
                 <span className="font-semibold text-[#000000]">
-                  ${subtotal}
+                  ₹{subtotal}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span>Shipping</span>
                 <span className="font-semibold text-[#000000]">
-                  ${shippingFee}
+                  ₹{shippingFee}
                 </span>
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between gap-4 text-lg font-semibold text-[#000000]">
               <span>Total</span>
-              <span>${total}</span>
+              <span>₹{total}</span>
             </div>
 
             {cartItems.length > 0 ? (

@@ -1,12 +1,20 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useProducts } from "@/hooks/useProducts";
 
 const PRODUCTS_PER_PAGE = 12;
+const SORT_OPTIONS = ["latest", "featured", "price-low", "price-high"];
 
 const normalizeFilterValue = (value) => String(value ?? "").trim().toLowerCase();
 
 const isBestseller = (product) => Boolean(product.isBestseller ?? product.bestseller);
+
+const getSortFromParams = (searchParams) => {
+  const sortParam = searchParams.get("sort");
+
+  return SORT_OPTIONS.includes(sortParam) ? sortParam : "latest";
+};
 
 const sortProducts = (products, sortBy) => {
   const sortedProducts = [...products];
@@ -30,11 +38,12 @@ const sortProducts = (products, sortBy) => {
 
 export const useCollectionFilters = () => {
   const { products, categories, subCategories } = useProducts();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("latest");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const sortBy = getSortFromParams(searchParams);
 
   const updateSearchTerm = (value) => {
     setSearchTerm(value);
@@ -42,8 +51,18 @@ export const useCollectionFilters = () => {
   };
 
   const updateSortBy = (value) => {
-    setSortBy(value);
+    const nextSort = SORT_OPTIONS.includes(value) ? value : "latest";
+
     setCurrentPage(0);
+    setSearchParams(
+      (currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        nextParams.set("sort", nextSort);
+
+        return nextParams;
+      },
+      { replace: true },
+    );
   };
 
   const toggleCategory = (category) => {
@@ -66,10 +85,18 @@ export const useCollectionFilters = () => {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setSortBy("latest");
     setSelectedCategories([]);
     setSelectedTypes([]);
     setCurrentPage(0);
+    setSearchParams(
+      (currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        nextParams.set("sort", "latest");
+
+        return nextParams;
+      },
+      { replace: true },
+    );
   };
 
   const filteredProducts = useMemo(() => {

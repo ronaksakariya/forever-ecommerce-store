@@ -27,6 +27,20 @@ const getInitialForm = (currentUser) => {
   };
 };
 
+const loadRazorpayScript = () =>
+  new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+
 export const useCheckout = () => {
   const { currentUser, setCurrentUser } = useAuth();
   const { cartItems, clearCart, refreshProducts, subtotal, totalItems } =
@@ -48,6 +62,40 @@ export const useCheckout = () => {
       ...currentForm,
       [field]: value,
     }));
+  };
+
+  const saveDeliveryAddress = async () => {
+    if (!saveAddress) return;
+
+    try {
+      const addressResponse = await axiosInstance.post("/api/user/addresses", {
+        ...formData,
+        label: "Home",
+      });
+
+      if (addressResponse.data.success) {
+        setCurrentUser(addressResponse.data.data);
+      }
+    } catch (addressError) {
+      toast.error(
+        addressError.response?.data?.message ||
+          "Order placed, but address was not saved.",
+      );
+    }
+  };
+
+  const finishSuccessfulOrder = async (message) => {
+    await saveDeliveryAddress();
+    clearCart();
+
+    try {
+      await refreshProducts({ showError: false });
+    } catch {
+      toast.info("Order placed, but latest stock could not be refreshed.");
+    }
+
+    toast.success(message);
+    navigate("/orders");
   };
 
   const submitOrder = async (event) => {
@@ -78,11 +126,6 @@ export const useCheckout = () => {
       return;
     }
 
-    if (paymentMethod !== "cod") {
-      toast.info("Only Cash on Delivery is available right now.");
-      return;
-    }
-
     try {
       setIsSubmitting(true);
 
@@ -92,45 +135,96 @@ export const useCheckout = () => {
         quantity: item.quantity,
       }));
 
-      const response = await axiosInstance.post("/api/order/place", {
-        items: orderItems,
-        paymentMethod,
-        shippingAddress: formData,
-      });
+      if (paymentMethod === "razorpay") {
+        const scriptLoaded = await loadRazorpayScript();
 
-      if (response.data.success) {
-        if (saveAddress) {
-          try {
-            const addressResponse = await axiosInstance.post(
-              "/api/user/addresses",
-              {
-                ...formData,
-                label: "Home",
+        if (!scriptLoaded) {
+          toast.error("Unable to load Razorpay. Please try again.");
+          return;
+        }
+
+        const response = await axiosInstance.post("/api/order/razorpay/create", {
+          items: orderItems,
+          paymentMethod,
+          shippingAddress: formData,
+        });
+
+        if (!response.data.success) return;
+
+        const { order, razorpayOrder, keyId } = response.data.data;
+        const activeUser = getActiveUser(currentUser);
+
+        await new Promise((resolve, reject) => {
+          const razorpay = new window.Razorpay({
+            key: keyId || import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency,
+            name: "Forever",
+            description: "Order payment",
+            order_id: razorpayOrder.id,
+            prefill: {
+              name: formData.name || activeUser?.name || "",
+              email: formData.email || activeUser?.email || "",
+              contact: formData.phone || "",
+            },
+            notes: {
+              orderId: order._id,
+            },
+            handler: async (paymentResponse) => {
+              try {
+                const verifyResponse = await axiosInstance.post(
+                  "/api/order/razorpay/verify",
+                  {
+                    orderId: order._id,
+                    ...paymentResponse,
+                  },
+                );
+
+                if (verifyResponse.data.success) {
+                  await finishSuccessfulOrder("Payment successful. Order placed.");
+                  resolve();
+                  return;
+                }
+
+                reject(new Error("Payment verification failed."));
+              } catch (verifyError) {
+                reject(verifyError);
+              }
+            },
+            modal: {
+              ondismiss: () => {
+                reject(new Error("Payment was cancelled."));
               },
-            );
+            },
+          });
 
-            if (addressResponse.data.success) {
-              setCurrentUser(addressResponse.data.data);
-            }
-          } catch (addressError) {
-            toast.error(
-              addressError.response?.data?.message ||
-                "Order placed, but address was not saved.",
-            );
-          }
-        }
+          razorpay.open();
+        });
 
-        clearCart();
-        try {
-          await refreshProducts({ showError: false });
-        } catch {
-          toast.info("Order placed, but latest stock could not be refreshed.");
-        }
-        toast.success("Order placed successfully.");
-        navigate("/orders");
+        return;
       }
+
+      if (paymentMethod === "cod") {
+        const response = await axiosInstance.post("/api/order/place", {
+          items: orderItems,
+          paymentMethod,
+          shippingAddress: formData,
+        });
+
+        if (response.data.success) {
+          await finishSuccessfulOrder("Order placed successfully.");
+        }
+
+        return;
+      }
+
+      toast.error("Invalid payment method.");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to place order.");
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to place order.",
+      );
     } finally {
       setIsSubmitting(false);
     }

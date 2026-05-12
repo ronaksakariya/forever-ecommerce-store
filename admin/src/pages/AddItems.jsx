@@ -39,9 +39,11 @@ export default function AddItems() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [isLoading, setIsLoading] = useState(isEditMode);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pageTitle = isEditMode ? "Edit Product" : "Add New Product";
   const submitLabel = isEditMode ? "SAVE CHANGES" : "ADD";
+  const submittingLabel = isEditMode ? "SAVING..." : "ADDING...";
 
   const imagePreviews = useMemo(
     () => images.map((image) => (image ? URL.createObjectURL(image) : "")),
@@ -179,6 +181,10 @@ export default function AddItems() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -193,6 +199,8 @@ export default function AddItems() {
       stock: normalizeStock(selectedSizes, stockBySize),
       isBestseller: bestseller,
     };
+
+    setIsSubmitting(true);
 
     try {
       if (isEditMode) {
@@ -235,6 +243,8 @@ export default function AddItems() {
       }
     } catch (error) {
       toast.error(`${error.response?.data?.message || error.message}.`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -362,7 +372,7 @@ export default function AddItems() {
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-                $
+                ₹
               </span>
               <input
                 type="number"
@@ -438,9 +448,10 @@ export default function AddItems() {
 
         <button
           type="submit"
-          className="bg-gray-900 hover:bg-gray-800 text-white font-semibold px-8 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 active:scale-[0.98]"
+          disabled={isSubmitting}
+          className="bg-gray-900 hover:bg-gray-800 text-white font-semibold px-8 py-3 rounded-xl text-sm tracking-wide transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-500 disabled:active:scale-100"
         >
-          {submitLabel}
+          {isSubmitting ? submittingLabel : submitLabel}
         </button>
       </form>
     </div>

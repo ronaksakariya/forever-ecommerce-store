@@ -175,7 +175,7 @@ export default function ListItems() {
                 </td>
                 <td className="px-5 py-3">
                   <span className="text-sm font-semibold text-gray-800">
-                    ${product.price}
+                    ₹{product.price}
                   </span>
                 </td>
                 <td className="px-5 py-3">
@@ -252,7 +252,7 @@ export default function ListItems() {
                   {formatCategory(product.category)}
                 </span>
                 <span className="text-sm font-semibold text-gray-800">
-                  ${product.price}
+                  ₹{product.price}
                 </span>
               </div>
               {getVisibleStock(product).length > 0 ? (
