@@ -6,11 +6,11 @@ A production-ready, full-stack e-commerce application built with the MERN stack.
 
 ## Live Demo
 
-| App                 | URL                                                   |
-| ------------------- | ----------------------------------------------------- |
-| Customer Storefront | [https://forever-ecommerce-user-store.vercel.app/](#) |
-| Admin Dashboard     | [https://forever-ecommerce-admin-store.vercel.app](#) |
-| Backend API         | [https://forever-ecommerce-store.onrender.com](#)     |
+| App                 | URL                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| Customer Storefront | [forever-ecommerce-user-store.vercel.app](https://forever-ecommerce-user-store.vercel.app/)  |
+| Admin Dashboard     | [forever-ecommerce-admin-store.vercel.app](https://forever-ecommerce-admin-store.vercel.app) |
+| Backend API         | [forever-ecommerce-store.onrender.com](https://forever-ecommerce-store.onrender.com)         |
 
 ---
 
